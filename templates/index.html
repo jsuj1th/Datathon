@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Document Classification System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔐 AI Document Classification System</h1>
+            <p>Multi-modal document analyzer with citation-based evidence</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('interactive')">Interactive Mode</button>
+            <button class="tab-button" onclick="showTab('batch')">Batch Processing</button>
+            <button class="tab-button" onclick="showTab('statistics')">Statistics</button>
+        </div>
+
+        <!-- Interactive Mode -->
+        <div id="interactive" class="tab-content active">
+            <div class="upload-section">
+                <h2>Upload Document</h2>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp" style="display: none;">
+                    <div class="upload-prompt">
+                        <span class="upload-icon">📄</span>
+                        <p>Click to upload or drag and drop</p>
+                        <p class="upload-hint">PDF, PNG, JPG, TIFF, BMP (Max 50MB)</p>
+                    </div>
+                </div>
+                <button id="classifyBtn" class="btn btn-primary" disabled>Classify Document</button>
+            </div>
+
+            <div id="results" class="results-section" style="display: none;">
+                <h2>Classification Results</h2>
+                
+                <div class="result-card">
+                    <div class="result-header">
+                        <h3 id="resultCategory"></h3>
+                        <span id="resultConfidence" class="confidence-badge"></span>
+                    </div>
+                    
+                    <div class="result-metadata">
+                        <div class="metadata-item">
+                            <span class="label">Pages:</span>
+                            <span id="resultPages">-</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="label">Images:</span>
+                            <span id="resultImages">-</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="label">Safety Check:</span>
+                            <span id="resultSafety">-</span>
+                        </div>
+                    </div>
+
+                    <div class="result-reasoning">
+                        <h4>Reasoning</h4>
+                        <p id="resultReasoning"></p>
+                    </div>
+
+                    <div class="result-evidence">
+                        <h4>Evidence & Citations</h4>
+                        <div id="evidenceList"></div>
+                    </div>
+
+                    <div id="reviewAlert" class="alert alert-warning" style="display: none;">
+                        <strong>⚠️ Human Review Required</strong>
+                        <p id="reviewReason"></p>
+                    </div>
+
+                    <div class="feedback-section">
+                        <h4>Provide Feedback</h4>
+                        <select id="feedbackCategory" class="form-control">
+                            <option value="">Correct classification if needed...</option>
+                            <option value="public">Public</option>
+                            <option value="confidential">Confidential</option>
+                            <option value="highly_sensitive">Highly Sensitive</option>
+                            <option value="unsafe">Unsafe</option>
+                        </select>
+                        <textarea id="feedbackNotes" class="form-control" placeholder="Additional notes..."></textarea>
+                        <button id="submitFeedbackBtn" class="btn btn-secondary">Submit Feedback</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Batch Processing -->
+        <div id="batch" class="tab-content">
+            <div class="upload-section">
+                <h2>Batch Upload</h2>
+                <input type="file" id="batchFileInput" multiple accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp">
+                <button id="batchProcessBtn" class="btn btn-primary">Process Batch</button>
+            </div>
+
+            <div id="batchStatus" class="batch-status" style="display: none;">
+                <h3>Processing Status</h3>
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <p id="progressText">Processing...</p>
+                <div id="batchResults" class="batch-results"></div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div id="statistics" class="tab-content">
+            <h2>System Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="totalFeedback">0</h3>
+                    <p>Total Feedback</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="agreementRate">0%</h3>
+                    <p>Agreement Rate</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="disagreementRate">0%</h3>
+                    <p>Disagreement Rate</p>
+                </div>
+            </div>
+            <canvas id="statsChart"></canvas>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
