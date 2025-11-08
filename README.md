@@ -60,19 +60,47 @@ A Model Context Protocol (MCP) server that intelligently matches your resume wit
 
 ### Installation
 
+### Installation
+
+#### Quick Setup (Recommended)
+
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/jobseeker-mcp-server.git
-cd jobseeker-mcp-server
+git clone https://github.com/yourusername/jobly-linkedin-mcp-server.git
+cd jobly-linkedin-mcp-server
 
-# Install dependencies
-npm install
-# or for Python
-pip install -r requirements.txt
+# Run the setup script
+./setup.sh
 
-# Configure environment variables
+# Edit your LinkedIn credentials
 cp .env.example .env
-# Edit .env with your configuration
+# Edit .env and add your LinkedIn email and password
+```
+
+#### Manual Installation
+
+```bash
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On macOS/Linux
+# or
+venv\Scripts\activate     # On Windows
+
+# Install Python dependencies
+pip install -r requirements.txt
+pip install -e .
+
+# Copy environment configuration
+cp .env.example .env
+# Edit .env with your LinkedIn credentials
+```
+
+#### Using the Existing LinkedIn MCP Server
+
+This project is based on the excellent work from [adhikasp/mcp-linkedin](https://github.com/adhikasp/mcp-linkedin). You can also install directly via Smithery:
+
+```bash
+npx -y @smithery/cli install mcp-linkedin --client claude
 ```
 
 ### Configuration
@@ -80,6 +108,10 @@ cp .env.example .env
 Create a `.env` file with your settings:
 
 ```env
+# LinkedIn API Credentials (Required)
+LINKEDIN_EMAIL=your_linkedin_email@example.com
+LINKEDIN_PASSWORD=your_linkedin_password
+
 # Email Configuration
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
@@ -96,17 +128,53 @@ TARGET_LOCATIONS=San Francisco,New York,Remote
 EXPERIENCE_LEVEL=mid,senior
 JOB_TYPES=full-time,contract
 SALARY_MIN=80000
+
+# MCP Server Configuration
+MCP_SERVER_HOST=localhost
+MCP_SERVER_PORT=8000
+DEBUG=false
+```
+
+#### Claude Desktop Configuration
+
+To use with Claude Desktop, add this configuration to your Claude Desktop settings:
+
+```json
+{
+  "mcpServers": {
+    "linkedin": {
+      "command": "python",
+      "args": ["main.py"],
+      "cwd": "/path/to/your/jobly-linkedin-mcp-server",
+      "env": {
+        "LINKEDIN_EMAIL": "your_linkedin_email",
+        "LINKEDIN_PASSWORD": "your_linkedin_password"
+      }
+    }
+  }
+}
 ```
 
 ### Running the Server
 
 ```bash
+# Test the installation first
+python test_linkedin_mcp.py
+
 # Start the MCP server
-npm start
-# or
 python main.py
 
 # The server will be available at the configured MCP endpoint
+```
+
+### Testing
+
+```bash
+# Run the test suite
+python test_linkedin_mcp.py
+
+# Test specific functionality
+python -c "from src.server.linkedin_mcp_client import search_jobs; print(search_jobs('software engineer', limit=2))"
 ```
 
 ## 🎯 Usage
