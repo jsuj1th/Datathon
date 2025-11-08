@@ -45,11 +45,13 @@ env/
 logs/
 *.log.*
 
-# Test outputs
+# Test outputs and logs
 *.json
 !requirements.txt
 tc*_report_*.json
 hitl_feedback.json
+*.log
+streamlit.log
 
 # Uploaded files
 uploads/
