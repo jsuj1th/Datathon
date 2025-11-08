@@ -1,0 +1,11 @@
+{
+  "github.copilot.chat.experimental.mcp.servers": [
+    {
+      "name": "Linkedin Job Search",
+      "transport": {
+        "type": "http",
+        "url": "http://localhost:8000/mcp"
+      }
+    }
+  ]
+}
