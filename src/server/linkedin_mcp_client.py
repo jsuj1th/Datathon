@@ -1,22 +1,28 @@
 #!/usr/bin/env python3
 """
-LinkedIn MCP Server
-A Model Context Protocol server that provides LinkedIn job search and feed capabilities.
-Based on adhikasp/mcp-linkedin implementation.
+LinkedIn Jobs MCP Server
+A Model Context Protocol server that provides LinkedIn job search functionality.
+Returns structured job data in standardized JSON format.
 """
 
+import fastmcp
 from linkedin_api import Linkedin
-from fastmcp import FastMCP
 import os
 import logging
-from typing import Optional
+import json
+from datetime import datetime
+from typing import Optional, List, Dict, Any
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize MCP server
-mcp = FastMCP("mcp-linkedin")
+mcp = fastmcp.FastMCP("linkedin-jobs")
 
 def get_client() -> Linkedin:
     """Get LinkedIn API client with credentials from environment variables."""
@@ -28,38 +34,19 @@ def get_client() -> Linkedin:
     
     return Linkedin(email, password, debug=True)
 
-@mcp.tool()
-def get_feed_posts(limit: int = 10, offset: int = 0) -> str:
+@mcp.tool
+def search_jobs(keywords: str, limit: int = 10, offset: int = 0, location: str = '') -> str:
     """
-    Retrieve LinkedIn feed posts.
+    Search for jobs on LinkedIn and return structured JSON data.
     
-    :param limit: Maximum number of posts to retrieve (default: 10)
-    :param offset: Number of posts to skip (default: 0)
-    :return: Feed post details as formatted string
-    """
-    client = get_client()
-    try:
-        post_urns = client.get_feed_posts(limit=limit, offset=offset)
-    except Exception as e:
-        logger.error(f"Error retrieving feed posts: {e}")
-        return f"Error retrieving feed posts: {e}"
-    
-    posts = ""
-    for urn in post_urns:
-        posts += f"Post by {urn['author_name']}: {urn['content']}\n\n"
-
-    return posts
-
-@mcp.tool()
-def search_jobs(keywords: str, limit: int = 3, offset: int = 0, location: str = '') -> str:
-    """
-    Search for jobs on LinkedIn.
-    
-    :param keywords: Job search keywords
-    :param limit: Maximum number of job results (default: 3)
-    :param offset: Number of jobs to skip (default: 0)
-    :param location: Optional location filter
-    :return: Job details as formatted string
+    Args:
+        keywords: Job search keywords (e.g., "software engineer", "data scientist")
+        limit: Maximum number of job results (default: 10)
+        offset: Number of jobs to skip (default: 0)
+        location: Optional location filter (e.g., "San Francisco", "Remote")
+        
+    Returns:
+        JSON string with structured job data
     """
     client = get_client()
     try:
@@ -71,71 +58,227 @@ def search_jobs(keywords: str, limit: int = 3, offset: int = 0, location: str = 
         )
     except Exception as e:
         logger.error(f"Error searching jobs: {e}")
-        return f"Error searching jobs: {e}"
+        return json.dumps({"error": f"Error searching jobs: {e}", "jobs": []})
     
-    job_results = ""
+    structured_jobs = []
+    
     for job in jobs:
         try:
-            job_id = job["entityUrn"].split(":")[-1]
-            job_data = client.get_job(job_id=job_id)
-
-            job_title = job_data.get("title", "N/A")
-            company_data = job_data.get("companyDetails", {}).get("com.linkedin.voyager.deco.jobs.web.shared.WebCompactJobPostingCompany", {})
-            company_name = company_data.get("companyResolutionResult", {}).get("name", "N/A")
-            job_description = job_data.get("description", {}).get("text", "N/A")
-            job_location = job_data.get("formattedLocation", "N/A")
+            # Extract basic job info
+            job_id = job["entityUrn"].split(":")[-1] if "entityUrn" in job else None
             
-            job_results += f"Job: {job_title} at {company_name} in {job_location}\n"
-            job_results += f"Description: {job_description[:500]}...\n\n"
+            # Get detailed job information
+            job_data = {}
+            if job_id:
+                try:
+                    job_data = client.get_job(job_id=job_id)
+                except Exception as e:
+                    logger.warning(f"Could not get detailed job data for {job_id}: {e}")
+            
+            # Extract company information
+            company_name = "N/A"
+            if job_data and "companyDetails" in job_data:
+                company_data = job_data.get("companyDetails", {}).get("com.linkedin.voyager.deco.jobs.web.shared.WebCompactJobPostingCompany", {})
+                company_name = company_data.get("companyResolutionResult", {}).get("name", "N/A")
+            elif "companyName" in job:
+                company_name = job["companyName"]
+            
+            # Extract job details
+            job_title = job_data.get("title", job.get("title", "N/A"))
+            job_location = job_data.get("formattedLocation", job.get("formattedLocation", location or "N/A"))
+            job_description = job_data.get("description", {}).get("text", job.get("description", ""))
+            
+            # Create apply link
+            apply_link = f"https://www.linkedin.com/jobs/view/{job_id}" if job_id else "N/A"
+            
+            # Determine job type and experience level
+            job_type = "full_time"  # Default
+            experience_level = None
+            remote_option = "onsite"  # Default
+            
+            # Parse description for additional details
+            if job_description:
+                desc_lower = job_description.lower()
+                
+                # Determine job type
+                if any(term in desc_lower for term in ["intern", "internship", "stage"]):
+                    job_type = "internship"
+                elif any(term in desc_lower for term in ["entry level", "new grad", "junior"]):
+                    job_type = "entry_level"
+                elif any(term in desc_lower for term in ["senior", "lead", "principal"]):
+                    job_type = "senior_level"
+                elif any(term in desc_lower for term in ["part time", "part-time"]):
+                    job_type = "part_time"
+                elif any(term in desc_lower for term in ["contract", "freelance"]):
+                    job_type = "contract"
+                
+                # Determine remote option
+                if any(term in desc_lower for term in ["remote", "work from home", "wfh"]):
+                    remote_option = "remote"
+                elif any(term in desc_lower for term in ["hybrid"]):
+                    remote_option = "hybrid"
+                
+                # Extract experience level
+                if "entry level" in desc_lower or "0-1 years" in desc_lower:
+                    experience_level = "entry_level"
+                elif any(term in desc_lower for term in ["1-3 years", "2-4 years"]):
+                    experience_level = "junior"
+                elif any(term in desc_lower for term in ["3-5 years", "4-6 years"]):
+                    experience_level = "mid_level"
+                elif any(term in desc_lower for term in ["5+ years", "senior"]):
+                    experience_level = "senior"
+            
+            # Calculate days since posted (LinkedIn doesn't provide exact dates, so we'll estimate)
+            days_since_posted = None
+            if job.get("listedAt"):
+                try:
+                    listed_timestamp = job["listedAt"] / 1000  # Convert from milliseconds
+                    listed_date = datetime.fromtimestamp(listed_timestamp)
+                    days_since_posted = (datetime.now() - listed_date).days
+                except:
+                    days_since_posted = None
+            
+            # Create structured job object
+            structured_job = {
+                "company": company_name,
+                "position": job_title,
+                "apply_link": apply_link,
+                "location": job_location,
+                "salary": None,  # LinkedIn API doesn't typically provide salary
+                "description": job_description[:1000] if job_description else None,  # Truncate for size
+                "requirements": None,  # Could extract from description if needed
+                "benefits": None,  # Could extract from description if needed
+                "job_type": job_type,
+                "experience_level": experience_level,
+                "posted_date": None,  # LinkedIn doesn't provide exact posting date
+                "deadline": None,  # LinkedIn doesn't provide application deadline
+                "days_since_posted": days_since_posted,
+                "remote_option": remote_option,
+                "visa_sponsorship": None,  # Would need to parse from description
+                "source": "linkedin",
+                "collection_method": "mcp_linkedin",
+                "collected_at": datetime.now().isoformat(),
+                "field": None,  # Could categorize based on keywords
+                "company_type": None  # Could extract from company data
+            }
+            
+            structured_jobs.append(structured_job)
             
         except Exception as e:
             logger.warning(f"Error processing job {job.get('entityUrn', 'unknown')}: {e}")
             continue
-
-    return job_results if job_results else "No jobs found matching the criteria."
-
-@mcp.tool()
-def get_profile(public_id: Optional[str] = None) -> str:
-    """
-    Get LinkedIn profile information.
     
-    :param public_id: Public ID of the profile (if None, gets own profile)
-    :return: Profile information as formatted string
-    """
+    result = {
+        "jobs": structured_jobs,
+        "total_found": len(structured_jobs),
+        "search_params": {
+            "keywords": keywords,
+            "location": location,
+            "limit": limit,
+            "offset": offset
+        }
+    }
+    
+    return json.dumps(result, indent=2)
+
+# Raw function for direct testing
+def raw_search_jobs(keywords: str, limit: int = 10, offset: int = 0, location: str = '') -> Dict[str, Any]:
+    """Raw job search function without MCP decorator for testing."""
     client = get_client()
     try:
-        if public_id:
-            profile = client.get_profile(public_id)
-        else:
-            # Get own profile
-            profile = client.get_profile()
-        
-        # Extract key information
-        first_name = profile.get('firstName', 'N/A')
-        last_name = profile.get('lastName', 'N/A')
-        headline = profile.get('headline', 'N/A')
-        location = profile.get('geoLocationName', 'N/A')
-        summary = profile.get('summary', 'N/A')
-        
-        profile_info = f"Name: {first_name} {last_name}\n"
-        profile_info += f"Headline: {headline}\n"
-        profile_info += f"Location: {location}\n"
-        profile_info += f"Summary: {summary}\n"
-        
-        return profile_info
-        
+        jobs = client.search_jobs(
+            keywords=keywords,
+            location_name=location,
+            limit=limit,
+            offset=offset,
+        )
     except Exception as e:
-        logger.error(f"Error retrieving profile: {e}")
-        return f"Error retrieving profile: {e}"
+        logger.error(f"Error searching jobs: {e}")
+        return {"error": f"Error searching jobs: {e}", "jobs": []}
+    
+    structured_jobs = []
+    
+    for job in jobs:
+        try:
+            job_id = job["entityUrn"].split(":")[-1] if "entityUrn" in job else None
+            
+            # Get detailed job information
+            job_data = {}
+            if job_id:
+                try:
+                    job_data = client.get_job(job_id=job_id)
+                except Exception as e:
+                    logger.warning(f"Could not get detailed job data for {job_id}: {e}")
+            
+            # Extract company information
+            company_name = "N/A"
+            if job_data and "companyDetails" in job_data:
+                company_data = job_data.get("companyDetails", {}).get("com.linkedin.voyager.deco.jobs.web.shared.WebCompactJobPostingCompany", {})
+                company_name = company_data.get("companyResolutionResult", {}).get("name", "N/A")
+            elif "companyName" in job:
+                company_name = job["companyName"]
+            
+            # Extract job details
+            job_title = job_data.get("title", job.get("title", "N/A"))
+            job_location = job_data.get("formattedLocation", job.get("formattedLocation", location or "N/A"))
+            job_description = job_data.get("description", {}).get("text", job.get("description", ""))
+            
+            # Create apply link
+            apply_link = f"https://www.linkedin.com/jobs/view/{job_id}" if job_id else "N/A"
+            
+            # Create structured job object
+            structured_job = {
+                "company": company_name,
+                "position": job_title,
+                "apply_link": apply_link,
+                "location": job_location,
+                "salary": None,
+                "description": job_description[:1000] if job_description else None,
+                "requirements": None,
+                "benefits": None,
+                "job_type": "full_time",
+                "experience_level": None,
+                "posted_date": None,
+                "deadline": None,
+                "days_since_posted": None,
+                "remote_option": "onsite",
+                "visa_sponsorship": None,
+                "source": "linkedin",
+                "collection_method": "mcp_linkedin",
+                "collected_at": datetime.now().isoformat(),
+                "field": None,
+                "company_type": None
+            }
+            
+            structured_jobs.append(structured_job)
+            
+        except Exception as e:
+            logger.warning(f"Error processing job: {e}")
+            continue
+    
+    return {
+        "jobs": structured_jobs,
+        "total_found": len(structured_jobs),
+        "search_params": {
+            "keywords": keywords,
+            "location": location,
+            "limit": limit,
+            "offset": offset
+        }
+    }
+
+# Test function for direct calling
+def test_search_jobs(keywords: str = "software engineer", location: str = "San Francisco", limit: int = 3) -> Dict[str, Any]:
+    """Test function for job search."""
+    return raw_search_jobs(keywords, limit, 0, location)
 
 if __name__ == "__main__":
     # Test the server
-    print("Testing LinkedIn MCP Server...")
+    print("Testing LinkedIn Jobs MCP Server...")
     try:
-        # Test job search
-        result = search_jobs(keywords="software engineer", location="San Francisco", limit=2)
+        result = test_search_jobs("python developer", "remote", 2)
         print("Job search result:")
-        print(result)
+        print(json.dumps(result, indent=2))
     except Exception as e:
         print(f"Error: {e}")
         print("Make sure to set LINKEDIN_EMAIL and LINKEDIN_PASSWORD environment variables.")

@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "linkedin-jobs": {
+      "command": "python",
+      "args": ["main.py"],
+      "cwd": "/Users/sujithjulakanti/Desktop/Datathon",
+      "env": {
+        "LINKEDIN_EMAIL": "your_linkedin_email",
+        "LINKEDIN_PASSWORD": "your_linkedin_password",
+        "MCP_SERVER_HOST": "localhost",
+        "MCP_SERVER_PORT": "8000",
+        "DEBUG": "false"
+      }
+    }
+  }
+}

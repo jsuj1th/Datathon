@@ -38,15 +38,13 @@ def main():
     
     # Start the server
     try:
-        # Import here to avoid circular imports
+        # Import and run the fastmcp server
         from src.server.linkedin_mcp_client import mcp
         
-        uvicorn.run(
-            mcp.run,
-            host=host,
-            port=port,
-            reload=debug,
-            log_level="info" if not debug else "debug"
+        # Run the MCP server directly
+        print("Starting LinkedIn MCP Server (FastMCP)...")
+        mcp.run(
+            transport="stdio"  # Use stdio transport for MCP
         )
     except KeyboardInterrupt:
         print("\nShutting down LinkedIn MCP Server...")

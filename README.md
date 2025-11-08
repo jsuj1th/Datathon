@@ -1,53 +1,64 @@
-# JobSeeker MCP Server
+# LinkedIn Jobs MCP Server
 
-A Model Context Protocol (MCP) server that intelligently matches your resume with relevant job opportunities across multiple platforms including LinkedIn, Glassdoor, GitHub Jobs, and other job boards. The server can scrape job listings, analyze them against your resume, and optionally assist with job applications.
+A Model Context Protocol (MCP) server that provides LinkedIn job search functionality with structured JSON output. Perfect for integrating with Claude Desktop and other MCP-compatible clients.
 
 ## 🚀 Features
 
 ### Core Functionality
-- **Resume-Based Job Matching**: Intelligent analysis of your resume to find the most relevant job opportunities
-- **Multi-Platform Scraping**: Automated job data collection from:
-  - LinkedIn Jobs
-  - Glassdoor
-  - GitHub Jobs
-  - Indeed
-  - AngelList/Wellfound
-  - Stack Overflow Jobs
-  - Remote job boards (Remote.co, We Work Remotely, etc.)
-- **Smart Filtering**: AI-powered job relevance scoring based on skills, experience, and preferences
-- **Application Assistance**: Automated job application submission (where possible)
-- **Email Integration**: Automated delivery of job matches and application documentation
-- **Document Management**: Resume optimization suggestions and cover letter generation
-
-### Advanced Features
-- **Real-time Job Alerts**: Continuous monitoring for new job postings
-- **Salary Analysis**: Compensation insights and market rate comparisons
-- **Company Research**: Automated company background and culture research
-- **Application Tracking**: Status monitoring for submitted applications
-- **Interview Preparation**: AI-generated interview questions and preparation materials
+- **LinkedIn Job Search**: Search for jobs on LinkedIn with keywords and location filters
+- **Structured JSON Output**: Returns standardized job data format for easy integration
+- **MCP Protocol Compliance**: Works seamlessly with Claude Desktop and other MCP clients
+- **Real-time Data**: Direct access to LinkedIn's job listings through unofficial API
 
 ## 🛠️ Architecture
 
-### MCP Server Components
+### MCP Server Structure
 ```
 ├── src/
-│   ├── server/          # MCP server implementation
-│   ├── scrapers/        # Platform-specific scrapers
-│   ├── analysis/        # Resume and job matching algorithms
-│   ├── applications/    # Auto-application modules
-│   ├── notifications/   # Email and alert systems
-│   └── utils/          # Shared utilities
+│   └── server/          # MCP server implementation
+│       └── linkedin_mcp_client.py  # Main LinkedIn Jobs MCP client
+├── main.py              # Server entry point
+├── requirements.txt     # Python dependencies
+├── .env.example        # Environment template
+└── test_json_format.py  # JSON format validation test
 ```
 
-### Supported Platforms
-| Platform | Scraping | Application | Notes |
-|----------|----------|-------------|-------|
-| LinkedIn | ✅ | ⚠️ | Limited by rate limits |
-| Glassdoor | ✅ | ❌ | Read-only access |
-| GitHub Jobs | ✅ | ✅ | Full API integration |
-| Indeed | ✅ | ⚠️ | Requires careful rate limiting |
-| AngelList | ✅ | ✅ | Startup-focused positions |
-| Stack Overflow | ✅ | ✅ | Tech-focused roles |
+### Available Tool
+
+#### `search_jobs` Tool
+**Purpose**: Search for jobs on LinkedIn and return structured JSON data
+
+**Parameters**:
+- `keywords`: Job search terms (e.g., "software engineer", "data scientist")
+- `limit`: Number of results to return (default: 10)
+- `offset`: Skip first N results (for pagination)
+- `location`: Geographic filter (e.g., "San Francisco", "Remote")
+
+**Returns**: JSON string with structured job data in the following format:
+```json
+{
+  "company": "Company Name",
+  "position": "Job Title",
+  "apply_link": "https://www.linkedin.com/jobs/view/12345",
+  "location": "City, State",
+  "salary": null,
+  "description": "Job description...",
+  "requirements": null,
+  "benefits": null,
+  "job_type": "full_time",
+  "experience_level": null,
+  "posted_date": null,
+  "deadline": null,
+  "days_since_posted": null,
+  "remote_option": "onsite",
+  "visa_sponsorship": null,
+  "source": "linkedin",
+  "collection_method": "mcp_linkedin",
+  "collected_at": "2025-11-08T12:26:13.688951",
+  "field": null,
+  "company_type": null
+}
+```
 
 ## 📋 Prerequisites
 
@@ -170,167 +181,87 @@ python main.py
 ### Testing
 
 ```bash
-# Run the test suite
-python test_linkedin_mcp.py
+# Test LinkedIn API functionality
+python test_simple_linkedin.py
 
-# Test specific functionality
-python -c "from src.server.linkedin_mcp_client import search_jobs; print(search_jobs('software engineer', limit=2))"
+# Test JSON format output
+python test_json_format.py
+
+# Start the MCP server
+python main.py
 ```
 
 ## 🎯 Usage
 
-### Basic Job Search
+### Basic Job Search with Claude Desktop
 
-```javascript
-// Connect to MCP server and search for jobs
-const jobs = await mcpClient.call('searchJobs', {
-  resumePath: './resume.pdf',
-  preferences: {
-    locations: ['San Francisco', 'Remote'],
-    jobTypes: ['full-time'],
-    salaryMin: 100000
-  }
-});
-```
+Once configured with Claude Desktop, you can use natural language commands:
 
-### Automated Application Flow
+- **"Search for Python developer jobs in San Francisco"**
+  - Calls: `search_jobs("python developer", 3, 0, "San Francisco")`
 
-```javascript
-// Set up automated job application
-await mcpClient.call('setupAutoApply', {
-  resume: './resume.pdf',
-  coverLetterTemplate: './cover-letter-template.txt',
-  maxApplicationsPerDay: 5,
-  targetCompanies: ['Google', 'Microsoft', 'OpenAI']
-});
-```
+- **"Find remote data scientist positions"** 
+  - Calls: `search_jobs("data scientist", 10, 0, "remote")`
 
-### Email Notifications
+- **"Look for entry-level software engineer jobs"**
+  - Calls: `search_jobs("entry level software engineer", 5, 0, "")`
 
-```javascript
-// Configure daily job digest
-await mcpClient.call('setupEmailDigest', {
-  frequency: 'daily',
-  maxJobs: 10,
-  includeAnalysis: true
-});
+### Direct Function Call
+
+```python
+from src.server.linkedin_mcp_client import test_search_jobs
+import json
+
+# Search for jobs
+result = test_search_jobs("software engineer", "remote", 5)
+print(json.dumps(result, indent=2))
 ```
 
 ## 🔧 Configuration Options
 
-### Resume Analysis Settings
-- **Skills Extraction**: Automatic identification of technical and soft skills
-- **Experience Parsing**: Years of experience calculation per technology/domain
-- **Education Weighting**: Degree and certification importance scoring
-- **Keywords Optimization**: Resume keyword enhancement suggestions
+### Job Search Parameters
+- **Keywords**: Any job title, skill, or company name
+- **Location**: City, state, country, or "remote"
+- **Limit**: Number of jobs to return (1-25 recommended)
+- **Offset**: For pagination through large result sets
 
-### Scraping Configuration
-- **Rate Limiting**: Configurable delays between requests
-- **Proxy Support**: Rotation for high-volume scraping
-- **User Agent Rotation**: Avoid detection mechanisms
-- **CAPTCHA Handling**: Automated solving (where legally permissible)
-
-### Matching Algorithms
-- **Skill Matching**: Weighted scoring based on required vs. possessed skills
-- **Location Preferences**: Distance and remote work calculations
-- **Salary Analysis**: Market rate comparisons and negotiation insights
-- **Company Culture Fit**: Based on values and work environment preferences
-
-## 📊 Analytics & Reporting
-
-### Job Market Insights
-- **Trending Technologies**: Most in-demand skills in your field
-- **Salary Trends**: Compensation analysis by location and experience
-- **Application Success Rates**: Track your application performance
-- **Market Competitiveness**: Your profile strength vs. job requirements
-
-### Performance Metrics
-- **Jobs Scraped**: Daily collection statistics
-- **Match Quality**: Relevance scoring accuracy
-- **Application Response Rate**: Success tracking
-- **Time to Interview**: Application to interview conversion metrics
-
-## 🤖 AI Integration
-
-### Resume Optimization
-- **ATS Compatibility**: Ensure resume passes applicant tracking systems
-- **Keyword Enhancement**: Strategic keyword placement for better matching
-- **Format Optimization**: Industry-specific resume formatting
-- **Content Suggestions**: Experience and skills presentation improvements
-
-### Cover Letter Generation
-- **Personalized Content**: Company and role-specific cover letters
-- **Tone Matching**: Professional style adaptation
-- **Achievement Highlighting**: Relevant experience emphasis
-- **Call-to-Action Optimization**: Effective closing statements
-
-## 🔐 Privacy & Security
-
-### Data Protection
-- **Local Processing**: Resume analysis performed locally
-- **Encrypted Storage**: Sensitive data encryption at rest
-- **Secure Transmission**: HTTPS/TLS for all communications
-- **Data Retention**: Configurable data cleanup policies
-
-### Compliance
-- **GDPR Compliant**: European data protection compliance
-- **CCPA Adherent**: California privacy law compliance
-- **Terms of Service**: Respect for platform terms and conditions
-- **Rate Limiting**: Ethical scraping practices
-
-## 📧 Email Integration
-
-### Notification Types
-- **Daily Digest**: Summary of new relevant jobs
-- **Application Confirmations**: Successful application submissions
-- **Interview Invitations**: Automated response suggestions
-- **Market Updates**: Industry trends and salary insights
-
-### Email Templates
-- **HTML Formatting**: Professional email layouts
-- **Attachment Support**: Resume and cover letter attachments
-- **Mobile Optimization**: Responsive email design
-- **Tracking Pixels**: Email open and click tracking
+### Data Fields Returned
+- **Basic Info**: Company, position, location, apply link
+- **Job Details**: Description, salary, requirements, benefits
+- **Job Type**: full_time, part_time, contract, internship, entry_level
+- **Work Style**: onsite, remote, hybrid
+- **Metadata**: Source, collection method, timestamp
 
 ## 🚨 Troubleshooting
 
 ### Common Issues
 
-#### Scraping Failures
+#### LinkedIn API Connection Issues
 ```bash
-# Check network connectivity
-curl -I https://linkedin.com
+# Test LinkedIn credentials
+python test_simple_linkedin.py
 
-# Verify user agent settings
-echo $USER_AGENT
-
-# Test proxy configuration
-curl --proxy $PROXY_URL https://example.com
+# Check if LinkedIn login works manually
+# Sometimes LinkedIn requires you to verify your account
 ```
 
-#### Email Delivery Issues
+#### No Jobs Found
 ```bash
-# Test SMTP connection
-telnet smtp.gmail.com 587
+# Try different search terms
+python -c "from src.server.linkedin_mcp_client import test_search_jobs; print(test_search_jobs('python', '', 5))"
 
-# Verify credentials
-echo "SMTP credentials: $EMAIL_USER"
+# Check if location is too specific
+# Try broader location terms like 'remote' or 'United States'
 ```
 
-#### Resume Parsing Problems
+#### MCP Server Issues
 ```bash
-# Check file format
-file resume.pdf
+# Test the server startup
+python main.py
 
-# Test parsing locally
-npm run test-resume-parsing
+# Check if all dependencies are installed
+pip install -r requirements.txt
 ```
-
-### Performance Optimization
-- **Concurrent Scraping**: Parallel job board processing
-- **Caching Strategy**: Redis-based result caching
-- **Database Optimization**: Efficient job storage and retrieval
-- **Memory Management**: Large dataset handling
 
 ## 🤝 Contributing
 
@@ -338,29 +269,28 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ### Development Setup
 ```bash
-# Install development dependencies
-npm install --dev
+# Clone and setup
+git clone https://github.com/yourusername/jobly-linkedin-mcp-server.git
+cd jobly-linkedin-mcp-server
+./setup.sh
 
-# Run tests
-npm test
+# Test the setup
+python test_simple_linkedin.py
 
-# Start in development mode
-npm run dev
-
-# Lint code
-npm run lint
+# Start development server
+python main.py
 ```
 
 ### Testing
 ```bash
-# Unit tests
-npm run test:unit
+# Test LinkedIn API functionality
+python test_simple_linkedin.py
 
-# Integration tests
-npm run test:integration
+# Test MCP server import
+python -c "from src.server.linkedin_mcp_client import mcp; print('MCP server ready')"
 
-# End-to-end tests
-npm run test:e2e
+# Start the server
+python main.py
 ```
 
 ## 📄 License
