@@ -8,11 +8,13 @@ Returns structured job data in standardized JSON format.
 import fastmcp
 from linkedin_api import Linkedin
 import os
+import sys
 import logging
 import json
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from dotenv import load_dotenv
+from pathlib import Path
 
 # Load environment variables
 load_dotenv()
@@ -23,6 +25,10 @@ logger = logging.getLogger(__name__)
 
 # Initialize MCP server
 mcp = fastmcp.FastMCP("linkedin-jobs")
+
+# Create output directory for saving job search results
+OUTPUT_DIR = Path("job_search_results")
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 def get_client() -> Linkedin:
     """Get LinkedIn API client with credentials from environment variables."""
@@ -179,6 +185,29 @@ def search_jobs(keywords: str, limit: int = 10, offset: int = 0, location: str =
         }
     }
     
+    # Save results to JSON file with descriptive filename
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_keywords = "".join(c for c in keywords if c.isalnum() or c in (' ', '-', '_')).rstrip()
+    safe_keywords = safe_keywords.replace(' ', '_')
+    safe_location = location.replace(' ', '_').replace(',', '') if location else 'any_location'
+    
+    filename = f"jobs_{safe_keywords}_{safe_location}_{timestamp}.json"
+    output_file = OUTPUT_DIR / filename
+    
+    try:
+        with open(output_file, "w", encoding='utf-8') as f:
+            json.dump(result, f, indent=2, ensure_ascii=False)
+        logger.info(f"Job search results saved to: {output_file}")
+        
+        # Also save as latest results for easy access
+        latest_file = OUTPUT_DIR / "latest_job_search.json"
+        with open(latest_file, "w", encoding='utf-8') as f:
+            json.dump(result, f, indent=2, ensure_ascii=False)
+        logger.info(f"Latest results also saved to: {latest_file}")
+        
+    except Exception as e:
+        logger.error(f"Failed to save job search results: {e}")
+    
     return json.dumps(result, indent=2)
 
 # Raw function for direct testing
@@ -256,7 +285,7 @@ def raw_search_jobs(keywords: str, limit: int = 10, offset: int = 0, location: s
             logger.warning(f"Error processing job: {e}")
             continue
     
-    return {
+    result = {
         "jobs": structured_jobs,
         "total_found": len(structured_jobs),
         "search_params": {
@@ -266,6 +295,31 @@ def raw_search_jobs(keywords: str, limit: int = 10, offset: int = 0, location: s
             "offset": offset
         }
     }
+    
+    # Save results to JSON file with descriptive filename
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_keywords = "".join(c for c in keywords if c.isalnum() or c in (' ', '-', '_')).rstrip()
+    safe_keywords = safe_keywords.replace(' ', '_')
+    safe_location = location.replace(' ', '_').replace(',', '') if location else 'any_location'
+    
+    filename = f"jobs_{safe_keywords}_{safe_location}_{timestamp}.json"
+    output_file = OUTPUT_DIR / filename
+    
+    try:
+        with open(output_file, "w", encoding='utf-8') as f:
+            json.dump(result, f, indent=2, ensure_ascii=False)
+        logger.info(f"Job search results saved to: {output_file}")
+        
+        # Also save as latest results for easy access
+        latest_file = OUTPUT_DIR / "latest_job_search.json"
+        with open(latest_file, "w", encoding='utf-8') as f:
+            json.dump(result, f, indent=2, ensure_ascii=False)
+        logger.info(f"Latest results also saved to: {latest_file}")
+        
+    except Exception as e:
+        logger.error(f"Failed to save job search results: {e}")
+    
+    return result
 
 # Test function for direct calling
 def test_search_jobs(keywords: str = "software engineer", location: str = "San Francisco", limit: int = 3) -> Dict[str, Any]:
@@ -273,12 +327,35 @@ def test_search_jobs(keywords: str = "software engineer", location: str = "San F
     return raw_search_jobs(keywords, limit, 0, location)
 
 if __name__ == "__main__":
-    # Test the server
-    print("Testing LinkedIn Jobs MCP Server...")
-    try:
-        result = test_search_jobs("python developer", "remote", 2)
-        print("Job search result:")
-        print(json.dumps(result, indent=2))
-    except Exception as e:
-        print(f"Error: {e}")
-        print("Make sure to set LINKEDIN_EMAIL and LINKEDIN_PASSWORD environment variables.")
+    # When run as a module for GitHub Copilot MCP HTTP server
+    import asyncio
+    
+    async def run_mcp_http_server():
+        """Run the MCP server as HTTP server for GitHub Copilot"""
+        try:
+            # Use FastMCP's built-in HTTP server
+            await mcp.run_http_async(
+                host="0.0.0.0",
+                port=8000,
+                transport="http"
+            )
+        except KeyboardInterrupt:
+            print("\nMCP HTTP server stopped.")
+        except Exception as e:
+            print(f"Error running MCP HTTP server: {e}")
+    
+    # Check if we have credentials
+    email = os.getenv("LINKEDIN_EMAIL")
+    password = os.getenv("LINKEDIN_PASSWORD")
+    
+    if not email or not password:
+        print("Error: LinkedIn credentials not found!")
+        print("Please set LINKEDIN_EMAIL and LINKEDIN_PASSWORD environment variables.")
+        sys.exit(1)
+    
+    print("Starting LinkedIn Jobs MCP HTTP Server...")
+    print(f"Authenticated as: {email[:5]}...@{email.split('@')[1] if '@' in email else 'unknown'}")
+    print("Server will be available at: http://localhost:8000")
+    
+    # Run the MCP HTTP server
+    asyncio.run(run_mcp_http_server())

@@ -1,337 +1,186 @@
-# LinkedIn Jobs MCP Server
+# LinkedIn Job Search MCP Server
 
-A Model Context Protocol (MCP) server that provides LinkedIn job search functionality with structured JSON output. Perfect for integrating with Claude Desktop and other MCP-compatible clients.
+A Model Context Protocol (MCP) server that provides LinkedIn job search functionality for GitHub Copilot integration.
 
-## 🚀 Features
+## Quick Start
 
-### Core Functionality
-- **LinkedIn Job Search**: Search for jobs on LinkedIn with keywords and location filters
-- **Structured JSON Output**: Returns standardized job data format for easy integration
-- **MCP Protocol Compliance**: Works seamlessly with Claude Desktop and other MCP clients
-- **Real-time Data**: Direct access to LinkedIn's job listings through unofficial API
+### 1. Setup
 
-## 🛠️ Architecture
+```bash
+# Install dependencies
+pip install -r requirements.txt
 
-### MCP Server Structure
-```
-├── src/
-│   └── server/          # MCP server implementation
-│       └── linkedin_mcp_client.py  # Main LinkedIn Jobs MCP client
-├── main.py              # Server entry point
-├── requirements.txt     # Python dependencies
-├── .env.example        # Environment template
-└── test_json_format.py  # JSON format validation test
+# Configure LinkedIn credentials in .env
+LINKEDIN_EMAIL=your-email@example.com
+LINKEDIN_PASSWORD=your-password
 ```
 
-### Available Tool
+### 2. Start Server
 
-#### `search_jobs` Tool
-**Purpose**: Search for jobs on LinkedIn and return structured JSON data
+```bash
+python start_http_server.py
+```
 
-**Parameters**:
-- `keywords`: Job search terms (e.g., "software engineer", "data scientist")
-- `limit`: Number of results to return (default: 10)
-- `offset`: Skip first N results (for pagination)
-- `location`: Geographic filter (e.g., "San Francisco", "Remote")
+Server runs at `http://localhost:8000/mcp`
 
-**Returns**: JSON string with structured job data in the following format:
+### 3. Configure VS Code
+
+Add to your VS Code `settings.json`:
+
 ```json
 {
-  "company": "Company Name",
-  "position": "Job Title",
-  "apply_link": "https://www.linkedin.com/jobs/view/12345",
-  "location": "City, State",
-  "salary": null,
-  "description": "Job description...",
-  "requirements": null,
-  "benefits": null,
-  "job_type": "full_time",
-  "experience_level": null,
-  "posted_date": null,
-  "deadline": null,
-  "days_since_posted": null,
-  "remote_option": "onsite",
-  "visa_sponsorship": null,
-  "source": "linkedin",
-  "collection_method": "mcp_linkedin",
-  "collected_at": "2025-11-08T12:26:13.688951",
-  "field": null,
-  "company_type": null
+  "github.copilot.chat.experimental.mcp.servers": [
+    {
+      "name": "Linkedin Job Search",
+      "transport": {
+        "type": "http",
+        "url": "http://localhost:8000/mcp"
+      }
+    }
+  ]
 }
 ```
 
-## 📋 Prerequisites
+### 4. Usage
 
-- Node.js 18+ or Python 3.9+
-- Valid email account for notifications
-- API keys for supported platforms (where available)
-- Chrome/Chromium for web scraping
+In GitHub Copilot:
+```
+@agent Search for software engineer jobs in San Francisco
+```
+
+## Features
+
+- **LinkedIn Job Search**: Search jobs by keywords and location
+- **Structured JSON Output**: Standardized job data format
+- **Auto File Saving**: Results saved to `job_search_results/`
+- **GitHub Copilot Integration**: Seamless VS Code integration
+
+## Available Tools
+
+### `search_jobs`
+- `keywords` (required): Job search terms
+- `limit` (optional): Max results (default: 10)
+- `offset` (optional): Skip results (default: 0)
+- `location` (optional): Location filter
+
+## File Structure
+
+```
+├── src/server/linkedin_mcp_client.py  # Main MCP server
+├── copilot_runner.py                  # HTTP server runner  
+├── start_http_server.py               # Startup script
+├── job_search_results/                # Saved search results
+└── requirements.txt                   # Dependencies
+```
+
+## Dependencies
+
+- `fastmcp`: MCP server framework
+- `linkedin-api`: LinkedIn API client
+- `python-dotenv`: Environment variables
 
 ## ⚡ Quick Start
 
-### Installation
-
-### Installation
-
-#### Quick Setup (Recommended)
-
+### 1. Start the HTTP Server
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/jobly-linkedin-mcp-server.git
-cd jobly-linkedin-mcp-server
-
-# Run the setup script
-./setup.sh
-
-# Edit your LinkedIn credentials
-cp .env.example .env
-# Edit .env and add your LinkedIn email and password
+python start_http_server.py
 ```
 
-#### Manual Installation
+### 2. Configure GitHub Copilot  
+Add this MCP server:
+- **Name**: `linkedin-jobs`
+- **Transport**: `HTTP`
+- **URL**: `http://localhost:8000/mcp`
 
-```bash
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On macOS/Linux
-# or
-venv\Scripts\activate     # On Windows
+### 3. Search Jobs with GitHub Copilot
+Ask GitHub Copilot: *"Find software engineer jobs in San Francisco"*
 
-# Install Python dependencies
-pip install -r requirements.txt
-pip install -e .
+## ✨ Features
 
-# Copy environment configuration
-cp .env.example .env
-# Edit .env with your LinkedIn credentials
-```
+✅ **LinkedIn Integration** - Search real LinkedIn job postings  
+✅ **Structured JSON Data** - Company, position, location, salary, etc.  
+✅ **GitHub Copilot Ready** - HTTP MCP server for seamless integration  
+✅ **Flexible Search** - Keywords, location, experience level filters  
+✅ **Rich Metadata** - Job type, remote options, posting dates  
 
-#### Using the Existing LinkedIn MCP Server
-
-This project is based on the excellent work from [adhikasp/mcp-linkedin](https://github.com/adhikasp/mcp-linkedin). You can also install directly via Smithery:
-
-```bash
-npx -y @smithery/cli install mcp-linkedin --client claude
-```
-
-### Configuration
-
-Create a `.env` file with your settings:
-
-```env
-# LinkedIn API Credentials (Required)
-LINKEDIN_EMAIL=your_linkedin_email@example.com
-LINKEDIN_PASSWORD=your_linkedin_password
-
-# Email Configuration
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASSWORD=your-app-password
-
-# API Keys (optional but recommended)
-LINKEDIN_API_KEY=your-linkedin-key
-GLASSDOOR_API_KEY=your-glassdoor-key
-GITHUB_TOKEN=your-github-token
-
-# Job Search Preferences
-TARGET_LOCATIONS=San Francisco,New York,Remote
-EXPERIENCE_LEVEL=mid,senior
-JOB_TYPES=full-time,contract
-SALARY_MIN=80000
-
-# MCP Server Configuration
-MCP_SERVER_HOST=localhost
-MCP_SERVER_PORT=8000
-DEBUG=false
-```
-
-#### Claude Desktop Configuration
-
-To use with Claude Desktop, add this configuration to your Claude Desktop settings:
+## 📊 Example Output
 
 ```json
 {
-  "mcpServers": {
-    "linkedin": {
-      "command": "python",
-      "args": ["main.py"],
-      "cwd": "/path/to/your/jobly-linkedin-mcp-server",
-      "env": {
-        "LINKEDIN_EMAIL": "your_linkedin_email",
-        "LINKEDIN_PASSWORD": "your_linkedin_password"
-      }
+  "jobs": [
+    {
+      "company": "Google",
+      "position": "Software Engineer", 
+      "apply_link": "https://linkedin.com/jobs/view/123456",
+      "location": "San Francisco, CA",
+      "job_type": "full_time",
+      "experience_level": "mid_level",
+      "remote_option": "hybrid",
+      "source": "linkedin"
     }
+  ],
+  "total_found": 25,
+  "search_params": {
+    "keywords": "software engineer",
+    "location": "San Francisco"
   }
 }
 ```
 
-### Running the Server
+## 🛠️ Installation
 
 ```bash
-# Test the installation first
-python test_linkedin_mcp.py
+# Install dependencies
+pip install -r requirements.txt
 
-# Start the MCP server
-python main.py
+# Set up LinkedIn credentials  
+cp .env.example .env
+# Edit .env with your LinkedIn email/password
 
-# The server will be available at the configured MCP endpoint
+# Start the server
+python start_http_server.py
 ```
 
-### Testing
+## 🔧 Available Tool
 
-```bash
-# Test LinkedIn API functionality
-python test_simple_linkedin.py
+### `search_jobs`
+Search LinkedIn for jobs with structured output.
 
-# Test JSON format output
-python test_json_format.py
+**Parameters:**
+- `keywords` (required): Job search terms (e.g., "python developer")
+- `location` (optional): Geographic filter (e.g., "San Francisco", "Remote") 
+- `limit` (optional): Number of results (default: 10, max: 25)
+- `offset` (optional): Pagination offset (default: 0)
 
-# Start the MCP server
-python main.py
-```
+## 📖 Documentation
 
-## 🎯 Usage
+- 🎉 [Setup Complete Guide](SETUP_COMPLETE.md) - You're all set!
+- 🚀 [Quick Start HTTP](QUICKSTART_HTTP.md) - HTTP server guide  
+- 🔧 [HTTP Server Setup](HTTP_SERVER_SETUP.md) - Detailed HTTP setup
+- 📋 [GitHub Copilot Setup](GITHUB_COPILOT_SETUP.md) - Copilot integration
 
-### Basic Job Search with Claude Desktop
+## 🛠️ Requirements
 
-Once configured with Claude Desktop, you can use natural language commands:
-
-- **"Search for Python developer jobs in San Francisco"**
-  - Calls: `search_jobs("python developer", 3, 0, "San Francisco")`
-
-- **"Find remote data scientist positions"** 
-  - Calls: `search_jobs("data scientist", 10, 0, "remote")`
-
-- **"Look for entry-level software engineer jobs"**
-  - Calls: `search_jobs("entry level software engineer", 5, 0, "")`
-
-### Direct Function Call
-
-```python
-from src.server.linkedin_mcp_client import test_search_jobs
-import json
-
-# Search for jobs
-result = test_search_jobs("software engineer", "remote", 5)
-print(json.dumps(result, indent=2))
-```
-
-## 🔧 Configuration Options
-
-### Job Search Parameters
-- **Keywords**: Any job title, skill, or company name
-- **Location**: City, state, country, or "remote"
-- **Limit**: Number of jobs to return (1-25 recommended)
-- **Offset**: For pagination through large result sets
-
-### Data Fields Returned
-- **Basic Info**: Company, position, location, apply link
-- **Job Details**: Description, salary, requirements, benefits
-- **Job Type**: full_time, part_time, contract, internship, entry_level
-- **Work Style**: onsite, remote, hybrid
-- **Metadata**: Source, collection method, timestamp
+- Python 3.8+
+- LinkedIn account credentials
+- GitHub Copilot
 
 ## 🚨 Troubleshooting
 
-### Common Issues
+**Server won't start?**
+- Check port 8000 is available: `lsof -i :8000`
+- Verify LinkedIn credentials in `.env` file
+- Run: `pip install -r requirements.txt`
 
-#### LinkedIn API Connection Issues
-```bash
-# Test LinkedIn credentials
-python test_simple_linkedin.py
+**GitHub Copilot can't connect?**
+- Ensure server runs at `http://localhost:8000/mcp`
+- Check firewall settings
+- Restart GitHub Copilot after adding server
 
-# Check if LinkedIn login works manually
-# Sometimes LinkedIn requires you to verify your account
-```
-
-#### No Jobs Found
-```bash
-# Try different search terms
-python -c "from src.server.linkedin_mcp_client import test_search_jobs; print(test_search_jobs('python', '', 5))"
-
-# Check if location is too specific
-# Try broader location terms like 'remote' or 'United States'
-```
-
-#### MCP Server Issues
-```bash
-# Test the server startup
-python main.py
-
-# Check if all dependencies are installed
-pip install -r requirements.txt
-```
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Development Setup
-```bash
-# Clone and setup
-git clone https://github.com/yourusername/jobly-linkedin-mcp-server.git
-cd jobly-linkedin-mcp-server
-./setup.sh
-
-# Test the setup
-python test_simple_linkedin.py
-
-# Start development server
-python main.py
-```
-
-### Testing
-```bash
-# Test LinkedIn API functionality
-python test_simple_linkedin.py
-
-# Test MCP server import
-python -c "from src.server.linkedin_mcp_client import mcp; print('MCP server ready')"
-
-# Start the server
-python main.py
-```
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- MCP Protocol developers
-- Open source scraping libraries
-- Job board APIs and documentation
-- Resume parsing libraries
-- Email service providers
-
-## 📞 Support
-
-- **Documentation**: [docs.jobseeker-mcp.com](https://docs.jobseeker-mcp.com)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/jobseeker-mcp-server/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/jobseeker-mcp-server/discussions)
-- **Email**: support@jobseeker-mcp.com
-
-## 🗺️ Roadmap
-
-### Version 1.0 (Current)
-- [x] Basic job scraping
-- [x] Resume analysis
-- [x] Email notifications
-- [x] LinkedIn integration
-
-### Version 1.1 (Next)
-- [ ] Advanced AI matching
-- [ ] Application tracking
-- [ ] Interview preparation
-- [ ] Salary negotiation tools
-
-### Version 2.0 (Future)
-- [ ] Mobile app companion
-- [ ] Team collaboration features
-- [ ] Advanced analytics dashboard
-- [ ] API marketplace integration
+**LinkedIn authentication errors?**
+- Double-check email/password in `.env`
+- LinkedIn may rate-limit API requests
 
 ---
 
-**Made with ❤️ for job seekers everywhere**
+Built with [FastMCP](https://github.com/jlowin/fastmcp) for seamless MCP integration 🎉
