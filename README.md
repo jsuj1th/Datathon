@@ -1,209 +1,337 @@
-# Job Search & AI Keyword Analysis Toolkit
+# 🎯 Automated Job Matcher & Email System
 
-A comprehensive Model Context Protocol (MCP) server for GitHub Copilot that provides job search functionality, PDF analysis, and AI-powered keyword generation using Google Gemini 2.0 Flash.
+An intelligent end-to-end job application pipeline that collects jobs from multiple sources, matches them with your resume using AI, and emails the top matches.
 
-## 🚀 Features
+## ✨ Features
 
-### Multi-Platform Job Search
-- **LinkedIn Simulation**: High-quality simulated LinkedIn job data with realistic company and salary information
-- **The Muse Jobs API**: Live job data from real companies like Meta, Google, Atlassian, TikTok
-- **Intelligent Fallbacks**: Market-accurate job generation when APIs are unavailable
-- **Combined Search**: Aggregated results from multiple sources with deduplication
-
-### AI-Powered PDF & Keyword Analysis
-- **PDF Parser**: Extract text and structured data from PDF documents
-- **Gemini AI Integration**: Advanced keyword extraction using Google's Gemini 2.0 Flash
-- **Job Matching**: Compare resumes against job descriptions
-- **ATS Optimization**: Optimize documents for Applicant Tracking Systems
-- **Industry Research**: Generate industry-specific keywords and trends
-
-### GitHub Copilot Ready
-- **MCP Compatible**: All functions work seamlessly with GitHub Copilot
-- **Structured JSON**: Standardized response format for AI consumption
-- **Async Support**: Real-time job searching capabilities
-- **Error Handling**: Robust fallback mechanisms
+- **Multi-Source Job Collection**: Automatically collects jobs from LinkedIn and GitHub repositories
+- **AI-Powered Matching**: Uses Google Gemini AI to match jobs with your resume
+- **Smart Ranking**: Ranks jobs by relevance with detailed match reasoning
+- **Automated Email Delivery**: Sends top 50 job matches via Gmail SMTP
+- **Complete Automation**: One command runs the entire pipeline
 
 ## 📁 Project Structure
 
 ```
-/
-├── mcp_server.py              # Main MCP server with all tools
-├── job_searcher.py            # Job search APIs and generation
-├── job_saver.py               # JSON format job saving utility
-├── pdf_parser.py              # PDF text extraction and analysis
-├── keyword_generator.py       # AI-powered keyword generation
-├── demo.py                    # Job search system demonstration
-├── keyword_demo.py            # Keyword tools demonstration  
-├── gemini_pdf_demo.py         # PDF + AI analysis demo
-├── keyword_tools_guide.md     # Comprehensive usage guide
-├── requirements.txt           # Python dependencies
-├── .env                       # Environment configuration
-└── job_search_results/        # Saved search results (JSON)
+Project/
+├── linkedin_collector/          # LinkedIn job collection
+│   ├── linkedin_searcher.py     # LinkedIn job search
+│   ├── search_and_save.py       # Save LinkedIn jobs
+│   └── job_search_results/      # LinkedIn job data
+│
+├── github_collector/            # GitHub job collection
+│   ├── github_discovery.py      # Discover job repos
+│   └── github_fetcher.py        # Fetch GitHub jobs
+│
+├── data/                        # Additional job sources
+│   └── jobs_output.json         # Jobs from various sources
+│
+├── matched_jobs/                # AI matching results
+│   └── top_50_matches.json      # Top 50 ranked jobs
+│
+├── models/                      # Data models
+│   └── job.py                   # Job data structure
+│
+├── collectors/                  # Legacy collectors
+│
+├── job_matcher.py              # AI job matching engine
+├── send_email_smtp.py          # Gmail email sender
+├── run_pipeline.py             # Main automation pipeline
+├── view_jobs.py                # View collected jobs
+├── main.py                     # Alternative job collector
+└── .env                        # Configuration (API keys)
 ```
 
-## 🛠 Quick Start
+## 🚀 Quick Start
 
-### Installation
+### 1. Install Dependencies
+
 ```bash
-# Install dependencies
+# Install Python packages
 pip install -r requirements.txt
 
-# Set up environment variables (add your Gemini API key)
-# GEMINI_API_KEY=your_api_key_here
+# Install Playwright for web scraping (if needed)
+playwright install chromium
 ```
 
-### Basic Usage
+### 2. Configure Environment Variables
+
+Edit `.env` file with your credentials:
+
 ```bash
-# Test job search system
-python demo.py
-
-# Test keyword generation tools
-python keyword_demo.py
-
-# Test PDF analysis with AI
-python gemini_pdf_demo.py
-
-# Start MCP server for GitHub Copilot
-python mcp_server.py
-```
-
-## 🔧 Available MCP Tools
-
-### Job Search
-- **`search_linkedin_jobs`** - LinkedIn-style job simulation
-- **`search_muse_jobs`** - The Muse API + realistic fallbacks  
-- **`search_combined_jobs`** - Combined platform search
-
-### PDF Processing
-- **`parse_pdf_document`** - Full PDF analysis with metadata
-- **`extract_pdf_text`** - Extract text only from PDFs
-- **`batch_parse_pdfs`** - Process multiple PDFs
-- **`extract_job_keywords_from_pdf`** - AI-powered PDF keyword extraction
-
-### AI Keyword Generation
-- **`generate_keywords_from_text`** - Extract keywords from text
-- **`generate_keywords_from_pdf`** - Extract keywords from PDFs
-- **`generate_job_match_keywords`** - Compare job vs resume
-- **`generate_industry_keywords`** - Industry-specific terms
-- **`optimize_keywords_for_ats`** - ATS optimization
-
-## 💡 Use Cases
-
-### Job Search Optimization
-```bash
-# Find jobs and analyze them
-python -c "
-from keyword_generator import KeywordGenerator
-generator = KeywordGenerator()
-
-# Analyze job description
-job_keywords = generator.generate_keywords_from_text(job_description, 'job_description')
-
-# Compare with your resume
-match_analysis = generator.generate_job_match_keywords(job_description, resume_text)
-
-# Get ATS optimization tips
-ats_tips = generator.optimize_keywords_for_ats(resume_text, 'target_job_title')
-"
-```
-
-### Industry Research
-```bash
-# Research industry keywords
-python keyword_demo.py
-```
-
-### PDF Document Analysis
-```bash
-# Analyze PDFs with AI
-python gemini_pdf_demo.py
-```
-
-## 📊 Job Data Format
-
-All jobs are saved in a standardized JSON format:
-
-```json
-{
-  "search_metadata": {
-    "query": {"keywords": "data scientist", "location": "California", "limit": 30},
-    "total_results": 26,
-    "collected_at": "2025-11-08T17:46:27.760114",
-    "source": "job_search_mcp_server"
-  },
-  "jobs": [
-    {
-      "company": "Meta",
-      "position": "Senior Data Scientist",
-      "apply_link": "https://linkedin.com/jobs/view/linkedin_1",
-      "location": "California",
-      "salary": "$120,000 - $180,000",
-      "description": "We are seeking a talented Senior Data Scientist...",
-      "requirements": "SQL, Python, Machine Learning, Statistics",
-      "benefits": "Health insurance, 401k, Stock options, Flexible PTO",
-      "job_type": "full_time",
-      "experience_level": "senior_level",
-      "posted_date": "2025-11-08",
-      "deadline": null,
-      "days_since_posted": 3,
-      "remote_option": "onsite",
-      "visa_sponsorship": true,
-      "source": "linkedin/linkedin_1",
-      "collection_method": "mcp_linkedin_simulation",
-      "collected_at": "2025-11-08T17:46:27.760075",
-      "field": "Data Science",
-      "company_type": "big_tech"
-    }
-  ]
-}
-```
-
-## 🤖 AI Keyword Analysis Format
-
-AI keyword extraction provides structured analysis:
-
-```json
-{
-  "technical_skills": ["Python", "AWS", "Docker"],
-  "soft_skills": ["Communication", "Leadership"],
-  "programming_languages": ["Python", "JavaScript"],
-  "tools_technologies": ["TensorFlow", "React"],
-  "job_titles": ["Data Scientist", "ML Engineer"],
-  "companies": ["Google", "Microsoft"],
-  "certifications": ["AWS Certified"],
-  "industries": ["Technology", "Finance"],
-  "document_summary": "Brief description of content",
-  "match_score": "75%",
-  "ats_score": "8/10",
-  "generated_at": "2025-11-08T20:00:00"
-}
-```
-
-## 🔑 Environment Setup
-
-Required environment variables in `.env`:
-
-```env
-# Google Gemini AI API Key
+# Gemini API Key (REQUIRED for job matching)
 GEMINI_API_KEY=your_gemini_api_key_here
 
-# LinkedIn Credentials (optional for enhanced simulation)
-LINKEDIN_EMAIL=your_email@gmail.com
-LINKEDIN_PASSWORD=your_password
+# Gmail SMTP (REQUIRED for email sending)
+GMAIL_USER=your_email@gmail.com
+GMAIL_APP_PASSWORD=your_16_char_app_password
+RECIPIENT_EMAIL=recipient@gmail.com
 ```
 
-## 📚 Documentation
+#### Get Gmail App Password:
+1. Go to https://myaccount.google.com/apppasswords
+2. Create password for "Mail"
+3. Copy the 16-character password (remove spaces)
+4. Add to `.env` file
 
-- **Keyword Tools Guide**: `keyword_tools_guide.md` - Comprehensive usage documentation
-- **Demo Scripts**: Run any `*_demo.py` file for interactive examples
-- **API Reference**: Check `mcp_server.py` for all available tools
+#### Get Gemini API Key:
+1. Go to https://aistudio.google.com/app/apikey
+2. Create API key
+3. Add to `.env` file
 
-## ✅ Ready for Production
+### 3. Run the Complete Pipeline
 
-This toolkit is production-ready and GitHub Copilot compatible! 🚀
-
-### Quick Test
 ```bash
-# Test all functionality
-python demo.py && python keyword_demo.py && python gemini_pdf_demo.py
+python3 run_pipeline.py
 ```
+
+This will:
+1. ✅ Load jobs from LinkedIn and other sources (521 jobs)
+2. 🤖 Match jobs with your resume using AI
+3. 📊 Rank and select top 50 matches
+4. 📧 Send email with job details
+
+## 📋 Pipeline Components
+
+### 1. Job Collection
+
+**LinkedIn Collector** (`linkedin_collector/`)
+- Searches LinkedIn for relevant jobs
+- Saves to `linkedin_collector/job_search_results/`
+
+```bash
+cd linkedin_collector
+python3 search_and_save.py
+```
+
+**GitHub Collector** (`github_collector/`)
+- Discovers job repositories on GitHub
+- Fetches jobs from markdown tables
+
+```bash
+cd github_collector
+python3 github_discovery.py
+```
+
+**Other Sources** (`data/`)
+- Jobs from additional sources stored in `data/jobs_output.json`
+
+### 2. AI Job Matching
+
+**Job Matcher** (`job_matcher.py`)
+- Loads jobs from all sources
+- Extracts resume from PDF
+- Uses Gemini AI to:
+  - Calculate match scores (0-100)
+  - Provide match reasoning
+  - Rank jobs by relevance
+
+```bash
+python3 job_matcher.py
+```
+
+Output: `matched_jobs/top_50_matches.json`
+
+### 3. Email Delivery
+
+**SMTP Email Sender** (`send_email_smtp.py`)
+- Sends top matches via Gmail
+- Formats jobs in readable email
+- Includes apply links and match scores
+
+```bash
+python3 send_email_smtp.py
+```
+
+## 🔧 Individual Component Usage
+
+### View Collected Jobs
+
+```bash
+python3 view_jobs.py
+```
+
+Shows statistics:
+- Total jobs collected
+- Jobs by source
+- Sample job listings
+
+### Run Job Matcher Only
+
+```bash
+python3 job_matcher.py
+```
+
+Outputs:
+- Console: Match scores and reasoning
+- File: `matched_jobs/top_50_matches.json`
+
+### Test Email Sending
+
+```bash
+python3 send_email_smtp.py
+```
+
+Requires:
+- `matched_jobs/top_50_matches.json` to exist
+- Gmail credentials in `.env`
+
+## 📊 Output Format
+
+### Matched Jobs (`matched_jobs/top_50_matches.json`)
+
+```json
+{
+  "matched_jobs": [
+    {
+      "company": "Google",
+      "position": "Machine Learning Engineer",
+      "location": "Mountain View, CA",
+      "match_score": 95,
+      "match_reason": "Strong alignment with your ML background...",
+      "apply_link": "https://...",
+      "source": "LinkedIn"
+    }
+  ],
+  "total_matched": 50,
+  "resume_summary": "...",
+  "matched_at": "2025-11-09T10:30:00"
+}
+```
+
+### Email Format
+
+```
+🎯 Top Job Matches Based on Your Resume
+======================================================================
+
+1. Machine Learning Engineer
+   Company: Google
+   Location: Mountain View, CA
+   Match Score: 95/100
+   Why: Strong alignment with your ML background and experience...
+   Apply: https://...
+
+[... 49 more jobs ...]
+```
+
+## 🔑 Configuration
+
+### Resume Location
+
+Update in `job_matcher.py` (line 135):
+```python
+resume_file = str(project_dir / "YourResume.pdf")
+```
+
+### Job Sources
+
+Add/modify sources in collectors:
+- LinkedIn: `linkedin_collector/linkedin_searcher.py`
+- GitHub: `github_collector/github_discovery.py`
+- Other: Add JSON files to `data/`
+
+### Email Settings
+
+Configure in `.env`:
+```bash
+GMAIL_USER=sender@gmail.com
+RECIPIENT_EMAIL=receiver@gmail.com
+```
+
+### AI Model
+
+Change model in `job_matcher.py` (line 35):
+```python
+self.model = genai.GenerativeModel("gemini-2.0-flash-exp")
+```
+
+## 🛠️ Troubleshooting
+
+### "No matched jobs found"
+- Check if `matched_jobs/top_50_matches.json` exists
+- Run `python3 job_matcher.py` first
+
+### Email not sending
+- Verify Gmail App Password is correct (16 chars, no spaces)
+- Check 2-Factor Authentication is enabled
+- Check spam folder for received emails
+
+### "GEMINI_API_KEY not found"
+- Add your Gemini API key to `.env` file
+- Get key at: https://aistudio.google.com/app/apikey
+
+### Job collection fails
+- Check internet connection
+- Verify API tokens in `.env`
+- Check rate limits for LinkedIn/GitHub
+
+## 📈 Pipeline Flow
+
+```
+┌─────────────────────────────────────────────────┐
+│  1. JOB COLLECTION                              │
+│  ─────────────────                              │
+│  • LinkedIn Collector → job_search_results/     │
+│  • GitHub Collector   → data/jobs_output.json   │
+│  • Other Sources      → data/                   │
+└─────────────────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────┐
+│  2. AI JOB MATCHING (job_matcher.py)            │
+│  ────────────────────────────────                │
+│  • Load 521 jobs from all sources               │
+│  • Extract resume from PDF                      │
+│  • Gemini AI analyzes each job                  │
+│  • Calculate match scores (0-100)               │
+│  • Generate match reasoning                     │
+│  • Rank and select top 50                       │
+└─────────────────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────┐
+│  3. EMAIL DELIVERY (send_email_smtp.py)         │
+│  ───────────────────────────────────             │
+│  • Load top 50 matches                          │
+│  • Format email with job details                │
+│  • Send via Gmail SMTP                          │
+│  • ✅ Check your inbox!                         │
+└─────────────────────────────────────────────────┘
+```
+
+## 🎓 Educational Purpose
+
+This project is part of **CSCE 689: Programming LLMs** course, demonstrating:
+- LLM integration (Google Gemini)
+- Web scraping and data collection
+- Automated workflows
+- Email automation
+- Real-world AI applications
+
+## 📝 Files Overview
+
+| File | Purpose | When to Use |
+|------|---------|-------------|
+| `run_pipeline.py` | Complete automation | Run entire pipeline |
+| `job_matcher.py` | AI matching engine | Match jobs with resume |
+| `send_email_smtp.py` | Email sender | Send matched jobs |
+| `view_jobs.py` | View collected jobs | Check collected data |
+| `main.py` | Alternative collector | Collect from web sources |
+
+## 🚦 Status
+
+✅ **Job Collection**: Working (521 jobs collected)
+✅ **AI Matching**: Working (Gemini 2.0 Flash)
+✅ **Email Sending**: Working (Gmail SMTP)
+✅ **Full Pipeline**: Ready to use
+
+## 🤝 Contributing
+
+Feel free to:
+- Add new job sources
+- Improve AI matching prompts
+- Enhance email formatting
+- Add new features
+
+## 📄 License
+
+Educational project for CSCE 689: Programming LLMs

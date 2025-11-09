@@ -1,0 +1,14 @@
+# Job Search Keywords
+# One keyword/phrase per line
+# Lines starting with # are ignored
+# Tip: Use fewer, more targeted keywords to save API credits
+
+# New Grad Focused (Most Effective)
+machine learning new grad
+AI new grad
+data scientist new grad
+
+# Core Technologies
+machine learning
+artificial intelligence
+deep learning

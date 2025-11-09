@@ -1,0 +1,79 @@
+# Configuration for Automated Job Retriever
+
+# Data Collection Settings
+collection:
+  # GitHub search parameters (dynamic discovery)
+  github:
+    search_keywords:
+      - "2026 new grad jobs"
+      - "2026 AI ML jobs"
+      - "2026 software engineer new grad"
+      - "new grad positions 2026"
+    filters:
+      min_stars: 50  # Minimum stars to consider repository
+      updated_within_days: 30  # Only repos updated recently
+      file_patterns:
+        - "README.md"
+        - "NEW_GRAD*.md"
+        - "JOBS*.md"
+
+  # Web scraping targets
+  web_scraping:
+    sites:
+      - name: "JobRight.ai"
+        url: "https://www.jobright.ai/jobs"
+        enabled: true
+        params:
+          job_type: "new_grad"
+          keywords: ["AI", "ML", "Machine Learning", "Data Science"]
+
+      - name: "Simplify.jobs"
+        url: "https://simplify.jobs/l/New-Grad-Data-Science-AI-ML"
+        enabled: true
+
+      - name: "Levels.fyi"
+        url: "https://www.levels.fyi/jobs"
+        enabled: true
+        params:
+          search_term: "machine learning"
+          level: "entry"
+
+      - name: "Wellfound"
+        url: "https://wellfound.com/jobs"
+        enabled: true
+        params:
+          role: "l"  # Engineering role
+          search: "machine learning"
+
+  # Collection limits
+  limits:
+    max_jobs_per_source: 200
+    max_total_jobs: 1000
+    request_delay_seconds: 2  # Polite scraping delay
+
+# Job Schema Settings
+job_schema:
+  required_fields:
+    - company
+    - position
+    - apply_link
+
+  optional_fields:
+    - location
+    - salary
+    - description
+    - requirements
+    - benefits
+    - job_type
+    - experience_level
+    - posted_date
+    - deadline
+    - visa_sponsorship
+    - remote_option
+
+# Output Settings
+output:
+  format: "json"
+  file_path: "data/jobs_output.json"
+  include_metadata: true  # Include collection timestamp, source, etc.
+  pretty_print: true
