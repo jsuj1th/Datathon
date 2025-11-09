@@ -6,10 +6,12 @@ Shows evidence in the expected format for each test case
 import streamlit as st
 import os
 import time
+import tempfile
 from preprocessor import DocumentPreprocessor
 from classifier import DocumentClassifier
 from config import Config
 from metrics_tracker import MetricsTracker
+from video_processor import VideoProcessor
 
 # Initialize metrics tracker in session state
 if 'metrics_tracker' not in st.session_state:
@@ -338,6 +340,152 @@ def format_evidence_tc5(classification, metadata):
     else:
         st.warning(f"⚠️ Single violation type: {', '.join(violation_types) if violation_types else 'None'}")
 
+def display_video_results(video_content, video_metadata, classification, processing_time):
+    """Display results specific to video processing"""
+    
+    # Video Processing Summary
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        duration = video_metadata.get('duration', 0)
+        minutes = int(duration // 60)
+        seconds = int(duration % 60)
+        st.metric("⏱️ Duration", f"{minutes}:{seconds:02d}")
+    
+    with col2:
+        method = video_content.get('processing_method', 'none')
+        method_display = method.replace('_', ' ').title()
+        st.metric("🎤 Method", method_display)
+    
+    with col3:
+        confidence_score = video_content.get('confidence_score', 0)
+        st.metric("🎯 Transcript Confidence", f"{confidence_score:.0%}")
+    
+    with col4:
+        st.metric("⏰ Processing Time", f"{processing_time:.1f}s")
+    
+    # Video metadata
+    st.markdown("---")
+    st.markdown("### 📹 Video Information")
+    
+    vcol1, vcol2, vcol3, vcol4 = st.columns(4)
+    
+    with vcol1:
+        resolution = video_metadata.get('resolution', (0, 0))
+        st.info(f"**Resolution:** {resolution[0]}x{resolution[1]}")
+    
+    with vcol2:
+        fps = video_metadata.get('fps', 0)
+        st.info(f"**Frame Rate:** {fps:.1f} FPS")
+    
+    with vcol3:
+        has_audio = video_metadata.get('has_audio', False)
+        st.info(f"**Audio Track:** {'✓ Present' if has_audio else '✗ Missing'}")
+    
+    with vcol4:
+        language = video_content.get('language_detected', 'unknown')
+        st.info(f"**Language:** {language.upper()}")
+    
+    # Transcript Section
+    transcript = video_content.get('transcript', '')
+    if transcript:
+        st.markdown("---")
+        st.markdown("### 🎤 Video Transcript")
+        
+        # Transcript stats
+        word_count = len(transcript.split())
+        char_count = len(transcript)
+        
+        tcol1, tcol2, tcol3 = st.columns(3)
+        with tcol1:
+            st.metric("Words", word_count)
+        with tcol2:
+            st.metric("Characters", char_count)
+        with tcol3:
+            segments = video_content.get('audio_segments', [])
+            st.metric("Segments", len(segments))
+        
+        # Show transcript preview
+        with st.expander("📝 View Full Transcript", expanded=False):
+            st.text_area("Transcript", transcript, height=200, disabled=True)
+        
+        # Show audio segments if available
+        segments = video_content.get('audio_segments', [])
+        if segments:
+            with st.expander(f"🔍 Audio Segments ({len(segments)} segments)", expanded=False):
+                for i, segment in enumerate(segments[:10]):  # Show first 10 segments
+                    start_time = segment.get('start', 0)
+                    end_time = segment.get('end', 0)
+                    text = segment.get('text', '')
+                    confidence = segment.get('confidence', 0)
+                    
+                    st.markdown(f"**Segment {i+1}** `{start_time:.1f}s - {end_time:.1f}s` (Confidence: {confidence:.0%})")
+                    st.markdown(f"_{text}_")
+                    st.markdown("---")
+                
+                if len(segments) > 10:
+                    st.caption(f"... and {len(segments) - 10} more segments")
+    
+    # Classification Results
+    st.markdown("---")
+    st.markdown("### 🤖 Classification Results")
+    
+    # Main classification metrics
+    ccol1, ccol2, ccol3 = st.columns(3)
+    
+    with ccol1:
+        category = classification.get('category', 'unknown').upper()
+        st.metric("📋 Category", category)
+    
+    with ccol2:
+        confidence = classification.get('confidence', 0)
+        st.metric("📊 Confidence", f"{confidence:.0%}")
+    
+    with ccol3:
+        safety_check = classification.get('safety_check', True)
+        st.metric("🛡️ Safety", "✓ Safe" if safety_check else "⚠️ Unsafe")
+    
+    # Show reasoning
+    reasoning = classification.get('reasoning', '')
+    if reasoning:
+        st.markdown("### 🧠 AI Reasoning")
+        st.info(reasoning)
+    
+    # Evidence section
+    evidence_list = classification.get('evidence', [])
+    if evidence_list:
+        st.markdown("### 📋 Evidence")
+        for idx, evidence in enumerate(evidence_list, 1):
+            if isinstance(evidence, dict):
+                finding = evidence.get('finding', 'No finding')
+                policy = evidence.get('policy_explanation', '')
+                
+                st.markdown(f"**Evidence {idx}:**")
+                st.markdown(f"📍 {finding}")
+                if policy:
+                    st.markdown(f"📜 Policy: {policy}")
+                st.markdown("---")
+    
+    # Dual-LLM verification if enabled
+    if classification.get('verification'):
+        st.markdown("### 🔄 Dual-LLM Verification")
+        verification = classification['verification']
+        agreement = verification.get('agreement', False)
+        
+        if agreement:
+            st.success("✅ Both LLMs agree on the classification")
+        else:
+            st.warning("⚠️ LLM disagreement detected - manual review recommended")
+            
+            primary_category = classification.get('category', 'unknown')
+            verification_category = verification.get('category', 'unknown')
+            
+            vcol1, vcol2 = st.columns(2)
+            with vcol1:
+                st.info(f"**Primary LLM:** {primary_category}")
+            with vcol2:
+                st.info(f"**Verification LLM:** {verification_category}")
+
 def show_metrics_report():
     """Display comprehensive metrics report"""
     st.markdown("## 📊 Comprehensive Metrics Report")
@@ -471,13 +619,14 @@ def main():
     # Option to upload custom file or use test cases
     upload_mode = st.sidebar.radio(
         "Choose input method:",
-        ["📤 Upload Your Own PDF", "📋 Use Test Cases"]
+        ["📄 Upload Document (PDF)", "🎬 Upload Video", "📋 Use Test Cases"]
     )
     
     filepath = None
     selected_test = None
+    file_type = None
     
-    if upload_mode == "📤 Upload Your Own PDF":
+    if upload_mode == "📄 Upload Document (PDF)":
         st.sidebar.markdown("---")
         uploaded_file = st.sidebar.file_uploader(
             "Upload a PDF document",
@@ -487,7 +636,6 @@ def main():
         
         if uploaded_file is not None:
             # Save uploaded file to test_documents folder
-            import os
             from datetime import datetime
             
             # Create filename with timestamp
@@ -503,8 +651,57 @@ def main():
             st.sidebar.success(f"✅ Uploaded: {uploaded_file.name}")
             st.sidebar.info(f"📁 Saved as: {filename}")
             selected_test = f"Custom: {uploaded_file.name}"
+            file_type = 'document'
         else:
             st.sidebar.info("👆 Please upload a PDF file to classify")
+            
+    elif upload_mode == "🎬 Upload Video":
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("### 🎬 Video Processing")
+        
+        # Video upload
+        uploaded_video = st.sidebar.file_uploader(
+            "Upload a video file",
+            type=['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'],
+            help="Upload a video file for audio transcription and text classification"
+        )
+        
+        if uploaded_video is not None:
+            # Show video information
+            file_size = uploaded_video.size / (1024 * 1024)  # MB
+            st.sidebar.success(f"✅ Video: {uploaded_video.name}")
+            st.sidebar.info(f"📊 Size: {file_size:.1f} MB")
+            
+            # Check file size limits
+            if file_size > Config.MAX_VIDEO_SIZE / (1024 * 1024):
+                st.sidebar.error(f"❌ File too large! Max size: {Config.MAX_VIDEO_SIZE / (1024 * 1024):.0f} MB")
+            else:
+                # Save video file
+                timestamp = time.strftime('%Y%m%d_%H%M%S')
+                safe_filename = uploaded_video.name.replace(' ', '_')
+                filename = f"video_{timestamp}_{safe_filename}"
+                filepath = os.path.join("uploads", filename)
+                
+                # Ensure uploads directory exists
+                os.makedirs("uploads", exist_ok=True)
+                
+                # Save video file
+                with open(filepath, "wb") as f:
+                    f.write(uploaded_video.getbuffer())
+                
+                selected_test = f"Video: {uploaded_video.name}"
+                file_type = 'video'
+                
+                # Show video processing info
+                st.sidebar.markdown("### 🔧 Processing Features")
+                st.sidebar.markdown("- 🎤 Audio extraction")
+                st.sidebar.markdown("- 📝 Speech transcription") 
+                st.sidebar.markdown("- 🤖 AI classification")
+                st.sidebar.markdown("- ⚡ ElevenLabs integration")
+                
+        else:
+            st.sidebar.info("👆 Please upload a video file to process")
+            st.sidebar.caption("Supported formats: MP4, AVI, MOV, WMV, FLV, WEBM, MKV")
     
     else:  # Use Test Cases
         test_files = {
@@ -517,9 +714,10 @@ def main():
         
         selected_test = st.sidebar.selectbox("Choose a test case:", list(test_files.keys()))
         filepath = test_files[selected_test]
+        file_type = 'document'
     
     # Show uploaded files management
-    if upload_mode == "📤 Upload Your Own PDF":
+    if upload_mode == "📄 Upload Document (PDF)":
         st.sidebar.markdown("---")
         st.sidebar.markdown("### 📂 Uploaded Files")
         
@@ -539,6 +737,27 @@ def main():
                 st.rerun()
         else:
             st.sidebar.caption("No uploaded files yet")
+            
+    elif upload_mode == "🎬 Upload Video":
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("### 📂 Uploaded Videos")
+        
+        import glob
+        uploaded_videos = glob.glob("uploads/video_*.*")
+        
+        if uploaded_videos:
+            st.sidebar.caption(f"{len(uploaded_videos)} video(s) uploaded")
+            
+            if st.sidebar.button("🗑️ Clear All Videos"):
+                for f in uploaded_videos:
+                    try:
+                        os.remove(f)
+                    except:
+                        pass
+                st.sidebar.success("Cleared!")
+                st.rerun()
+        else:
+            st.sidebar.caption("No uploaded videos yet")
     
     # Show metrics summary in sidebar
     if len(st.session_state.metrics_tracker.test_results) > 0:
@@ -559,28 +778,106 @@ def main():
     can_classify = filepath is not None
     
     if not can_classify:
-        st.sidebar.warning("⚠️ Please select or upload a document first")
+        st.sidebar.warning("⚠️ Please select or upload a file first")
     
-    if st.sidebar.button("🔍 Classify Document", type="primary", disabled=not can_classify):
-        with st.spinner("Analyzing document..."):
-            # Start timing
-            start_time = time.time()
-            
-            # Initialize
-            preprocessor = DocumentPreprocessor()
-            classifier = DocumentClassifier()
-            
-            # Pre-process
-            preprocess_result = preprocessor.check_file_validity(filepath)
-            
-            if not preprocess_result['valid']:
-                st.error(f"❌ Pre-processing failed: {preprocess_result['errors']}")
-                return
-            
-            metadata = preprocess_result['metadata']
-            
-            # Extract content
-            content = preprocessor.extract_content_for_analysis(filepath, metadata)
+    # Dynamic button text based on file type
+    button_text = "🎬 Process Video & Classify" if file_type == 'video' else "🔍 Classify Document"
+    
+    if st.sidebar.button(button_text, type="primary", disabled=not can_classify):
+        if file_type == 'video':
+            # Video processing workflow
+            with st.spinner("🎬 Processing video (this may take a few minutes)..."):
+                st.info("🔄 Extracting audio from video...")
+                
+                # Start timing
+                start_time = time.time()
+                
+                # Initialize video processor
+                video_processor = VideoProcessor()
+                
+                # Check video validity
+                video_check = video_processor.check_video_validity(filepath)
+                
+                if not video_check['valid']:
+                    st.error(f"❌ Video processing failed: {video_check['errors']}")
+                    return
+                
+                st.info("🎤 Transcribing audio with AI...")
+                
+                # Extract content (includes transcription)
+                video_metadata = video_check['metadata']
+                video_content = video_processor.extract_content_for_analysis(filepath, video_metadata)
+                
+                if video_content.get('error'):
+                    st.error(f"❌ Video transcription failed: {video_content['error']}")
+                    return
+                
+                if not video_content.get('text', '').strip():
+                    st.warning("⚠️ No transcript could be extracted from the video")
+                    st.info("This might be due to:")
+                    st.markdown("- No audio track in the video")
+                    st.markdown("- Poor audio quality")
+                    st.markdown("- Unsupported audio format")
+                    st.markdown("- API service unavailable")
+                    
+                    # Show video metadata anyway
+                    st.markdown("### 📹 Video Information")
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        duration = video_metadata.get('duration', 0)
+                        minutes = int(duration // 60)
+                        seconds = int(duration % 60)
+                        st.metric("Duration", f"{minutes}:{seconds:02d}")
+                    with col2:
+                        resolution = video_metadata.get('resolution', (0, 0))
+                        st.metric("Resolution", f"{resolution[0]}x{resolution[1]}")
+                    with col3:
+                        has_audio = video_metadata.get('has_audio', False)
+                        st.metric("Has Audio", "✓" if has_audio else "✗")
+                    return
+                
+                st.info("🤖 Classifying extracted transcript...")
+                
+                # Initialize document classifier
+                classifier = DocumentClassifier()
+                
+                # Classify the transcript
+                classification = classifier.classify_document(
+                    video_content, 
+                    video_metadata,
+                    enable_dual_llm=st.session_state.enable_dual_llm
+                )
+                
+                # End timing
+                processing_time = time.time() - start_time
+                
+                # Display Video Results
+                st.success("✅ Video Processing & Classification Complete!")
+                
+                # Show video-specific results
+                display_video_results(video_content, video_metadata, classification, processing_time)
+                
+        else:
+            # Document processing workflow
+            with st.spinner("Analyzing document..."):
+                # Start timing
+                start_time = time.time()
+                
+                # Initialize
+                preprocessor = DocumentPreprocessor()
+                classifier = DocumentClassifier()
+                
+                # Pre-process
+                preprocess_result = preprocessor.check_file_validity(filepath)
+                
+                if not preprocess_result['valid']:
+                    st.error(f"❌ Pre-processing failed: {preprocess_result['errors']}")
+                    return
+                
+                metadata = preprocess_result['metadata']
+                
+                # Extract content
+                content = preprocessor.extract_content_for_analysis(filepath, metadata)
             
             # Classify (pass dual-LLM toggle state)
             classification = classifier.classify_document(

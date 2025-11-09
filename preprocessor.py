@@ -8,6 +8,20 @@ import cv2
 import numpy as np
 from config import Config
 
+# Import video processor for video handling
+try:
+    from video_processor import VideoProcessor
+    VIDEO_PROCESSING_AVAILABLE = True
+except ImportError:
+    VIDEO_PROCESSING_AVAILABLE = False
+
+# Import video processor for video handling
+try:
+    from video_processor import VideoProcessor
+    VIDEO_PROCESSING_AVAILABLE = True
+except ImportError:
+    VIDEO_PROCESSING_AVAILABLE = False
+
 class DocumentPreprocessor:
     
     @staticmethod
@@ -46,6 +60,9 @@ class DocumentPreprocessor:
         elif file_ext in ['.png', '.jpg', '.jpeg', '.tiff', '.bmp']:
             image_results = DocumentPreprocessor._check_image(file_path)
             results['metadata'].update(image_results)
+        elif file_ext in ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv']:
+            video_results = DocumentPreprocessor._check_video(file_path)
+            results['metadata'].update(video_results)
         else:
             results['valid'] = False
             results['errors'].append('Unsupported file type')
@@ -140,6 +157,55 @@ class DocumentPreprocessor:
         return metadata
     
     @staticmethod
+    def _check_video(file_path):
+        """Check video-specific properties using video processor"""
+        metadata = {
+            'type': 'video',
+            'page_count': 1,  # Videos are treated as single "page" documents
+            'image_count': 0,
+            'has_text': False,
+            'is_legible': True,
+            'duration': 0,
+            'has_audio': False,
+            'text_content': '',
+            'fps': 0,
+            'resolution': (0, 0)
+        }
+        
+        if not VIDEO_PROCESSING_AVAILABLE:
+            metadata['is_legible'] = False
+            metadata['error'] = 'Video processing not available - install video dependencies'
+            return metadata
+        
+        try:
+            # Use video processor for detailed analysis
+            video_processor = VideoProcessor()
+            validation_result = video_processor.check_video_validity(file_path)
+            
+            if validation_result['valid']:
+                video_metadata = validation_result['metadata']
+                metadata.update({
+                    'duration': video_metadata.get('duration', 0),
+                    'has_audio': video_metadata.get('has_audio', False),
+                    'fps': video_metadata.get('fps', 0),
+                    'resolution': video_metadata.get('resolution', (0, 0)),
+                    'video_codec': video_metadata.get('video_codec', 'unknown'),
+                    'audio_codec': video_metadata.get('audio_codec', 'unknown')
+                })
+                
+                # If video has audio, we consider it as having potential text content
+                metadata['has_text'] = video_metadata.get('has_audio', False)
+            else:
+                metadata['is_legible'] = False
+                metadata['error'] = '; '.join(validation_result.get('errors', []))
+                
+        except Exception as e:
+            metadata['is_legible'] = False
+            metadata['error'] = str(e)
+        
+        return metadata
+    
+    @staticmethod
     def _assess_image_quality(img_array):
         """Assess image quality using variance of Laplacian"""
         try:
@@ -183,5 +249,25 @@ class DocumentPreprocessor:
                     'page': 1,
                     'data': f.read()
                 })
+        elif file_ext in ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv']:
+            # Extract text content from video using video processor
+            if VIDEO_PROCESSING_AVAILABLE and metadata.get('has_audio', False):
+                try:
+                    video_processor = VideoProcessor()
+                    video_content = video_processor.extract_content_for_analysis(file_path, metadata)
+                    
+                    # Update text content with transcript
+                    content['text'] = video_content.get('transcript', '')
+                    content['video_transcript'] = video_content.get('transcript', '')
+                    content['audio_segments'] = video_content.get('audio_segments', [])
+                    content['processing_method'] = video_content.get('processing_method', 'none')
+                    content['confidence_score'] = video_content.get('confidence_score', 0.0)
+                    content['language_detected'] = video_content.get('language_detected', 'unknown')
+                    
+                    if video_content.get('error'):
+                        content['processing_error'] = video_content['error']
+                        
+                except Exception as e:
+                    content['processing_error'] = f'Video processing failed: {str(e)}'
         
         return content

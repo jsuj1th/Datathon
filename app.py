@@ -35,7 +35,7 @@ def index():
 @app.route('/api/classify', methods=['POST'])
 def classify_document():
     """
-    Interactive single document classification
+    Interactive single document classification (supports PDFs, images, and videos)
     """
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'}), 400
@@ -88,6 +88,117 @@ def classify_document():
         }
         
         return jsonify(result)
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classify/video', methods=['POST'])
+def classify_video():
+    """
+    Dedicated video classification endpoint with enhanced progress tracking
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'No video file provided'}), 400
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No video file selected'}), 400
+    
+    # Check if it's a video file
+    file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+    if file_ext not in Config.SUPPORTED_VIDEO_FORMATS:
+        return jsonify({
+            'error': 'Unsupported video format',
+            'supported_formats': list(Config.SUPPORTED_VIDEO_FORMATS)
+        }), 400
+    
+    try:
+        # Save video file
+        filename = secure_filename(file.filename)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"{timestamp}_{filename}"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        
+        # Pre-process video
+        preprocess_result = preprocessor.check_file_validity(filepath)
+        
+        if not preprocess_result['valid']:
+            return jsonify({
+                'error': 'Video pre-processing failed',
+                'details': preprocess_result['errors']
+            }), 400
+        
+        # Extract content (this includes transcription)
+        metadata = preprocess_result['metadata']
+        content = preprocessor.extract_content_for_analysis(filepath, metadata)
+        
+        # Check if transcription was successful
+        if not content.get('text', '').strip():
+            return jsonify({
+                'warning': 'No transcript extracted from video',
+                'details': content.get('processing_error', 'Unknown transcription error'),
+                'filename': file.filename,
+                'document_id': filename,
+                'video_metadata': {
+                    'duration': metadata.get('duration', 0),
+                    'has_audio': metadata.get('has_audio', False),
+                    'resolution': metadata.get('resolution', (0, 0)),
+                    'processing_method': content.get('processing_method', 'none')
+                }
+            }), 200
+        
+        # Classify using the transcript
+        classification = classifier.classify_document(content, metadata)
+        
+        # Check if HITL needed
+        needs_review, review_reason = hitl_manager.should_flag_for_review(classification)
+        
+        result = {
+            'filename': file.filename,
+            'document_id': filename,
+            'classification': classification,
+            'needs_review': needs_review,
+            'review_reason': review_reason,
+            'video_processing': {
+                'transcript_extracted': True,
+                'transcript_length': len(content.get('text', '')),
+                'processing_method': content.get('processing_method', 'none'),
+                'confidence_score': content.get('confidence_score', 0.0),
+                'language_detected': content.get('language_detected', 'unknown'),
+                'audio_segments_count': len(content.get('audio_segments', []))
+            },
+            'video_metadata': {
+                'duration': metadata.get('duration', 0),
+                'has_audio': metadata.get('has_audio', False),
+                'resolution': metadata.get('resolution', (0, 0)),
+                'fps': metadata.get('fps', 0)
+            },
+            'preprocess_checks': {
+                'valid': preprocess_result['valid'],
+                'warnings': preprocess_result.get('warnings', [])
+            }
+        }
+        
+        return jsonify(result)
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/video/transcript/<document_id>', methods=['GET'])
+def get_video_transcript(document_id):
+    """
+    Get detailed transcript information for a processed video
+    """
+    try:
+        # This would typically load from a database or cache
+        # For now, we'll return a placeholder response
+        return jsonify({
+            'document_id': document_id,
+            'transcript_available': True,
+            'message': 'Transcript endpoint ready - implement storage/retrieval as needed'
+        })
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500

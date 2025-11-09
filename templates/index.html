@@ -23,8 +23,20 @@
         <!-- Interactive Mode -->
         <div id="interactive" class="tab-content active">
             <div class="upload-section">
-                <h2>Upload Document</h2>
-                <div class="upload-area" id="uploadArea">
+                <h2>Upload Document or Video</h2>
+                
+                <!-- File Type Selection -->
+                <div class="file-type-selector">
+                    <button type="button" id="documentMode" class="file-type-btn active" onclick="switchFileMode('document')">
+                        📄 Documents
+                    </button>
+                    <button type="button" id="videoMode" class="file-type-btn" onclick="switchFileMode('video')">
+                        🎬 Videos
+                    </button>
+                </div>
+                
+                <!-- Document Upload Area -->
+                <div id="documentUpload" class="upload-area" style="display: block;">
                     <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp" style="display: none;">
                     <div class="upload-prompt">
                         <span class="upload-icon">📄</span>
@@ -32,7 +44,46 @@
                         <p class="upload-hint">PDF, PNG, JPG, TIFF, BMP (Max 50MB)</p>
                     </div>
                 </div>
+                
+                <!-- Video Upload Area -->
+                <div id="videoUpload" class="upload-area video-upload" style="display: none;">
+                    <input type="file" id="videoInput" accept=".mp4,.avi,.mov,.wmv,.flv,.webm,.mkv" style="display: none;">
+                    <div class="upload-prompt">
+                        <span class="upload-icon">🎬</span>
+                        <p>Click to upload or drag and drop video</p>
+                        <p class="upload-hint">MP4, AVI, MOV, WMV, FLV, WEBM, MKV (Max 200MB, 30min)</p>
+                        <div class="video-features">
+                            <div class="feature-item">
+                                <span class="feature-icon">🎤</span>
+                                <span>Audio Transcription</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon">🤖</span>
+                                <span>ElevenLabs AI</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon">📝</span>
+                                <span>Text Classification</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="videoPreview" class="video-preview" style="display: none;">
+                        <video id="previewVideo" controls style="max-width: 100%; max-height: 300px;"></video>
+                        <div class="video-info">
+                            <div class="video-metadata">
+                                <span id="videoDuration"></span>
+                                <span id="videoSize"></span>
+                                <span id="videoFormat"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <button id="classifyBtn" class="btn btn-primary" disabled>Classify Document</button>
+                <button id="classifyVideoBtn" class="btn btn-primary" disabled style="display: none;">
+                    <span class="btn-icon">🎬</span>
+                    Transcribe & Classify Video
+                </button>
             </div>
 
             <div id="results" class="results-section" style="display: none;">
@@ -56,6 +107,36 @@
                         <div class="metadata-item">
                             <span class="label">Safety Check:</span>
                             <span id="resultSafety">-</span>
+                        </div>
+                        <!-- Video-specific metadata -->
+                        <div id="videoMetadata" style="display: none;">
+                            <div class="metadata-item">
+                                <span class="label">Duration:</span>
+                                <span id="resultDuration">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="label">Transcription:</span>
+                                <span id="resultTranscription">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="label">Method:</span>
+                                <span id="resultMethod">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video Transcript Section -->
+                    <div id="transcriptSection" class="transcript-section" style="display: none;">
+                        <h4>🎤 Video Transcript</h4>
+                        <div class="transcript-controls">
+                            <button id="showFullTranscript" class="btn btn-sm btn-outline">Show Full Transcript</button>
+                            <span id="transcriptStats" class="transcript-stats"></span>
+                        </div>
+                        <div id="transcriptPreview" class="transcript-preview">
+                            <p id="transcriptText"></p>
+                        </div>
+                        <div id="transcriptFull" class="transcript-full" style="display: none;">
+                            <div id="transcriptSegments"></div>
                         </div>
                     </div>
 
@@ -94,8 +175,19 @@
         <div id="batch" class="tab-content">
             <div class="upload-section">
                 <h2>Batch Upload</h2>
+                <div class="batch-options">
+                    <label>
+                        <input type="checkbox" id="includeDocs" checked> Documents (PDF, Images)
+                    </label>
+                    <label>
+                        <input type="checkbox" id="includeVideos"> Videos (MP4, AVI, MOV, etc.)
+                    </label>
+                </div>
                 <input type="file" id="batchFileInput" multiple accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp">
                 <button id="batchProcessBtn" class="btn btn-primary">Process Batch</button>
+                <div class="batch-info">
+                    <p><strong>Note:</strong> Video processing may take longer due to transcription requirements.</p>
+                </div>
             </div>
 
             <div id="batchStatus" class="batch-status" style="display: none;">
