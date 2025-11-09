@@ -1,0 +1,53 @@
+{
+  "jobs": [
+    {
+      "company": "Takeda",
+      "position": "Data Engineering Professional I",
+      "location": "Santa Fe, NM",
+      "description": "Position at Takeda",
+      "requirements": "",
+      "apply_link": "https://simplify.jobs/p/08d41ef5-a920-4b64-bdef-edbca30130c7/Data-Engineering-Professional-I",
+      "source": "simplify_github",
+      "experience_level": "JobType.NEW_GRAD",
+      "job_type": "JobType.NEW_GRAD",
+      "remote_option": "RemoteOption.ONSITE"
+    },
+    {
+      "company": "The Travelers Companies",
+      "position": "Data Engineer 1 - Databricks - PySpark - Snowflake",
+      "location": "Atlanta, GA",
+      "description": "Position at The Travelers Companies",
+      "requirements": "",
+      "apply_link": "https://simplify.jobs/p/b1062ca6-2c4c-41bb-8f95-29addce94379/Data-Engineer-1-Databricks-PySpark-Snowflake",
+      "source": "simplify_github",
+      "experience_level": "JobType.NEW_GRAD",
+      "job_type": "JobType.NEW_GRAD",
+      "remote_option": "RemoteOption.ONSITE"
+    },
+    {
+      "company": "Royal Bank of Canada",
+      "position": "Data Engineer - RBC Amplify 2026 - Calgary",
+      "location": "Calgary, Canada",
+      "description": "Position at Royal Bank of Canada",
+      "requirements": "",
+      "apply_link": "https://simplify.jobs/p/ab4ed944-7f16-4c17-9627-6443aaa943cb/Data-Engineer-RBC-Amplify-2026-Calgary",
+      "source": "simplify_github",
+      "experience_level": "JobType.NEW_GRAD",
+      "job_type": "JobType.NEW_GRAD",
+      "remote_option": "RemoteOption.ONSITE"
+    },
+    {
+      "company": "Netic",
+      "position": "Machine Learning Engineer \u2013 New Grad",
+      "location": "San Francisco, CA",
+      "description": "Position at Netic",
+      "requirements": "",
+      "apply_link": "https://simplify.jobs/p/f6288fa7-371b-43c4-95a9-b5bf2f92193b/Machine-Learning-Engineer--New-Grad",
+      "source": "simplify_github",
+      "experience_level": "JobType.NEW_GRAD",
+      "job_type": "JobType.NEW_GRAD",
+      "remote_option": "RemoteOption.ONSITE"
+    }
+  ],
+  "source": "github"
+}

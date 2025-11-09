@@ -70,7 +70,7 @@ class JobSearcher:
             if "software" in keywords.lower() or "engineer" in keywords.lower():
                 params["category"] = "Software Engineering"
 
-            response = self.session.get(url, params=params, timeout=10)
+            response = self.session.get(url, params=params, timeout=30)
             
             if response.status_code == 200:
                 data = response.json()

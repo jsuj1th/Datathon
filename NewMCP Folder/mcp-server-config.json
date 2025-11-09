@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "job-matcher": {
+      "command": "python3",
+      "args": [
+        "/Users/sujithjulakanti/Desktop/Datathon/NewMCP Folder/job_matcher_mcp_stdio.py"
+      ],
+      "env": {
+        "GEMINI_API_KEY": "AIzaSyD7F1pczNXPhOo-_9G5azducOLCLTG0DD0"
+      }
+    },
+    "complete-job-search": {
+      "command": "python3",
+      "args": [
+        "/Users/sujithjulakanti/Desktop/Datathon/NewMCP Folder/complete_job_search_mcp_server.py"
+      ],
+      "env": {
+        "GEMINI_API_KEY": "AIzaSyD7F1pczNXPhOo-_9G5azducOLCLTG0DD0"
+      }
+    }
+  }
+}
