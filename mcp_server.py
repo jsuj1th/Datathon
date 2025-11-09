@@ -36,6 +36,22 @@ except ImportError:
     JOB_SEARCHER_AVAILABLE = False
     logging.warning("Job searcher not available")
 
+# Import PDF parser
+try:
+    from pdf_parser import PDFParser
+    PDF_PARSER_AVAILABLE = True
+except ImportError:
+    PDF_PARSER_AVAILABLE = False
+    logging.warning("PDF parser not available")
+
+# Import keyword generator
+try:
+    from keyword_generator import KeywordGenerator
+    KEYWORD_GENERATOR_AVAILABLE = True
+except ImportError:
+    KEYWORD_GENERATOR_AVAILABLE = False
+    logging.warning("Keyword generator not available")
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -254,6 +270,290 @@ app.tool()(search_muse_jobs)
 app.tool()(search_combined_jobs)
 app.tool()(bb7_search_jobs)
 
+@mcp.tool
+def parse_pdf_document(file_path: str, method: str = "auto", save_result: bool = True) -> str:
+    """
+    Parse a PDF document and extract structured information.
+    
+    Args:
+        file_path: Path to the PDF file to parse
+        method: Parsing method ('pypdf2', 'pdfplumber', 'pymupdf', 'auto')
+        save_result: Whether to save the parsed result to a JSON file
+        
+    Returns:
+        JSON string with parsed PDF data including text, metadata, and structured information
+    """
+    if not PDF_PARSER_AVAILABLE:
+        return json.dumps({
+            "error": "PDF parser not available. Install with: pip install PyPDF2 pdfplumber PyMuPDF"
+        })
+    
+    try:
+        parser = PDFParser()
+        result = parser.parse_pdf(file_path, method)
+        
+        if save_result:
+            output_file = parser.save_parsed_data(result)
+            result["saved_to"] = output_file
+        
+        return json.dumps(result, indent=2)
+        
+    except Exception as e:
+        return json.dumps({
+            "error": f"Failed to parse PDF: {str(e)}",
+            "file_path": file_path
+        })
+
+@mcp.tool
+def extract_pdf_text(file_path: str, method: str = "auto") -> str:
+    """
+    Extract only the text content from a PDF file.
+    
+    Args:
+        file_path: Path to the PDF file
+        method: Parsing method ('pypdf2', 'pdfplumber', 'pymupdf', 'auto')
+        
+    Returns:
+        Raw text content from the PDF
+    """
+    if not PDF_PARSER_AVAILABLE:
+        return "PDF parser not available. Install with: pip install PyPDF2 pdfplumber PyMuPDF"
+    
+    try:
+        parser = PDFParser()
+        text = parser.extract_text_only(file_path, method)
+        return text
+        
+    except Exception as e:
+        return f"Error extracting text from PDF: {str(e)}"
+
+@mcp.tool
+def batch_parse_pdfs(directory_path: str, pattern: str = "*.pdf", save_results: bool = True) -> str:
+    """
+    Parse multiple PDF files in a directory.
+    
+    Args:
+        directory_path: Path to directory containing PDF files
+        pattern: File pattern to match (default: "*.pdf")
+        save_results: Whether to save individual parsed results
+        
+    Returns:
+        JSON string with results from all parsed PDFs
+    """
+    if not PDF_PARSER_AVAILABLE:
+        return json.dumps({
+            "error": "PDF parser not available. Install with: pip install PyPDF2 pdfplumber PyMuPDF"
+        })
+    
+    try:
+        parser = PDFParser()
+        results = parser.batch_parse_pdfs(directory_path, pattern)
+        
+        if save_results:
+            # Save a summary of all results
+            summary = {
+                "batch_info": {
+                    "directory": directory_path,
+                    "pattern": pattern,
+                    "total_files": len(results),
+                    "processed_at": datetime.now().isoformat()
+                },
+                "results": results
+            }
+            
+            # Save batch summary
+            output_dir = Path(__file__).parent / "parsed_pdfs"
+            output_dir.mkdir(exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            batch_file = output_dir / f"batch_results_{timestamp}.json"
+            
+            with open(batch_file, 'w', encoding='utf-8') as f:
+                json.dump(summary, f, indent=2, ensure_ascii=False)
+            
+            return json.dumps({
+                **summary,
+                "batch_results_saved_to": str(batch_file)
+            }, indent=2)
+        
+        return json.dumps({
+            "batch_info": {
+                "directory": directory_path,
+                "pattern": pattern,
+                "total_files": len(results),
+                "processed_at": datetime.now().isoformat()
+            },
+            "results": results
+        }, indent=2)
+        
+    except Exception as e:
+        return json.dumps({
+            "error": f"Failed to batch parse PDFs: {str(e)}",
+            "directory": directory_path
+        })
+
+@mcp.tool
+def extract_job_keywords_from_pdf(file_path: str) -> str:
+    """
+    Extract job-relevant keywords from a PDF using AI analysis.
+    
+    Args:
+        file_path: Path to the PDF file to analyze
+        
+    Returns:
+        JSON string with AI-extracted keywords and job-relevant information
+    """
+    if not PDF_PARSER_AVAILABLE:
+        return json.dumps({
+            "error": "PDF parser not available. Install with: pip install PyPDF2 pdfplumber PyMuPDF"
+        })
+    
+    try:
+        parser = PDFParser()
+        result = parser.extract_job_keywords(file_path)
+        return json.dumps(result, indent=2)
+        
+    except Exception as e:
+        return json.dumps({
+            "error": f"Failed to extract keywords: {str(e)}",
+            "file_path": file_path
+        })
+
+@mcp.tool
+def generate_keywords_from_text(text: str, context: str = "general") -> str:
+    """
+    Generate job-relevant keywords from text using Gemini AI.
+    
+    Args:
+        text: Input text to analyze
+        context: Context type ('job_description', 'resume', 'cover_letter', 'general')
+        
+    Returns:
+        JSON string with extracted keywords and analysis
+    """
+    if not KEYWORD_GENERATOR_AVAILABLE:
+        return json.dumps({
+            "error": "Keyword generator not available. Check Gemini AI setup."
+        })
+    
+    try:
+        generator = KeywordGenerator()
+        result = generator.generate_keywords_from_text(text, context)
+        return json.dumps(result, indent=2)
+        
+    except Exception as e:
+        return json.dumps({
+            "error": f"Failed to generate keywords: {str(e)}"
+        })
+
+@mcp.tool
+def generate_keywords_from_pdf(file_path: str, context: str = "auto") -> str:
+    """
+    Generate keywords from a PDF file using Gemini AI.
+    
+    Args:
+        file_path: Path to PDF file
+        context: Context type ('job_description', 'resume', 'cover_letter', 'auto')
+        
+    Returns:
+        JSON string with extracted keywords and file analysis
+    """
+    if not KEYWORD_GENERATOR_AVAILABLE:
+        return json.dumps({
+            "error": "Keyword generator not available. Check Gemini AI setup."
+        })
+    
+    try:
+        generator = KeywordGenerator()
+        result = generator.generate_keywords_from_pdf(file_path, context)
+        return json.dumps(result, indent=2)
+        
+    except Exception as e:
+        return json.dumps({
+            "error": f"Failed to generate keywords from PDF: {str(e)}",
+            "file_path": file_path
+        })
+
+@mcp.tool
+def generate_job_match_keywords(job_description: str, resume_text: str) -> str:
+    """
+    Generate keywords for job matching by comparing job description with resume.
+    
+    Args:
+        job_description: Text of job description
+        resume_text: Text of resume/CV
+        
+    Returns:
+        JSON string with matching analysis and keyword recommendations
+    """
+    if not KEYWORD_GENERATOR_AVAILABLE:
+        return json.dumps({
+            "error": "Keyword generator not available. Check Gemini AI setup."
+        })
+    
+    try:
+        generator = KeywordGenerator()
+        result = generator.generate_job_match_keywords(job_description, resume_text)
+        return json.dumps(result, indent=2)
+        
+    except Exception as e:
+        return json.dumps({
+            "error": f"Failed to analyze job match: {str(e)}"
+        })
+
+@mcp.tool
+def generate_industry_keywords(industry: str, role: str = "") -> str:
+    """
+    Generate industry-specific keywords and terms.
+    
+    Args:
+        industry: Industry name (e.g., "technology", "healthcare", "finance")
+        role: Optional specific role (e.g., "software engineer", "data scientist")
+        
+    Returns:
+        JSON string with industry-specific keywords
+    """
+    if not KEYWORD_GENERATOR_AVAILABLE:
+        return json.dumps({
+            "error": "Keyword generator not available. Check Gemini AI setup."
+        })
+    
+    try:
+        generator = KeywordGenerator()
+        result = generator.generate_industry_keywords(industry, role)
+        return json.dumps(result, indent=2)
+        
+    except Exception as e:
+        return json.dumps({
+            "error": f"Failed to generate industry keywords: {str(e)}"
+        })
+
+@mcp.tool
+def optimize_keywords_for_ats(text: str, target_job: str = "") -> str:
+    """
+    Optimize keywords for ATS (Applicant Tracking Systems).
+    
+    Args:
+        text: Text to optimize (resume, cover letter, etc.)
+        target_job: Target job title or description
+        
+    Returns:
+        JSON string with ATS optimization recommendations
+    """
+    if not KEYWORD_GENERATOR_AVAILABLE:
+        return json.dumps({
+            "error": "Keyword generator not available. Check Gemini AI setup."
+        })
+    
+    try:
+        generator = KeywordGenerator()
+        result = generator.optimize_keywords_for_ats(text, target_job)
+        return json.dumps(result, indent=2)
+        
+    except Exception as e:
+        return json.dumps({
+            "error": f"Failed to optimize for ATS: {str(e)}"
+        })
+
 # Test function for when run as script
 async def test_mcp_server():
     """Test the MCP server functionality."""
@@ -302,10 +602,29 @@ def main():
         # Run the MCP server over HTTP
         print("🚀 Starting Jobs MCP Server over HTTP...")
         print("Available tools:")
-        print("  - search_linkedin_jobs")
-        print("  - search_muse_jobs") 
-        print("  - search_combined_jobs")
-        print("  - bb7_search_jobs (legacy)")
+        print("  Job Search:")
+        print("    - search_linkedin_jobs")
+        print("    - search_muse_jobs") 
+        print("    - search_combined_jobs")
+        print("    - bb7_search_jobs (legacy)")
+        print("  PDF Processing:")
+        print("    - parse_pdf_document")
+        print("    - extract_pdf_text")
+        print("    - batch_parse_pdfs")
+        print("    - extract_job_keywords_from_pdf (AI-powered)")
+        print("  Keyword Generation (AI-powered):")
+        print("    - generate_keywords_from_text")
+        print("    - generate_keywords_from_pdf")
+        print("    - generate_job_match_keywords")
+        print("    - generate_industry_keywords")
+        print("    - optimize_keywords_for_ats")
+        print("    - extract_job_keywords_from_pdf")
+        print("  Keyword Generation:")
+        print("    - generate_keywords_from_text")
+        print("    - generate_keywords_from_pdf")
+        print("    - generate_job_match_keywords")
+        print("    - generate_industry_keywords")
+        print("    - optimize_keywords_for_ats")
         print("🌐 Server will be available at: http://localhost:8080/mcp")
         
         try:

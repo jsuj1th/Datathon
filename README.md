@@ -1,6 +1,6 @@
-# Job Search MCP Server
+# Job Search & AI Keyword Analysis Toolkit
 
-A Model Context Protocol (MCP) server for GitHub Copilot that provides comprehensive job search functionality. This system combines LinkedIn-style job simulation with real job data from The Muse Jobs API, plus intelligent fallback generation.
+A comprehensive Model Context Protocol (MCP) server for GitHub Copilot that provides job search functionality, PDF analysis, and AI-powered keyword generation using Google Gemini 2.0 Flash.
 
 ## 🚀 Features
 
@@ -9,6 +9,13 @@ A Model Context Protocol (MCP) server for GitHub Copilot that provides comprehen
 - **The Muse Jobs API**: Live job data from real companies like Meta, Google, Atlassian, TikTok
 - **Intelligent Fallbacks**: Market-accurate job generation when APIs are unavailable
 - **Combined Search**: Aggregated results from multiple sources with deduplication
+
+### AI-Powered PDF & Keyword Analysis
+- **PDF Parser**: Extract text and structured data from PDF documents
+- **Gemini AI Integration**: Advanced keyword extraction using Google's Gemini 2.0 Flash
+- **Job Matching**: Compare resumes against job descriptions
+- **ATS Optimization**: Optimize documents for Applicant Tracking Systems
+- **Industry Research**: Generate industry-specific keywords and trends
 
 ### GitHub Copilot Ready
 - **MCP Compatible**: All functions work seamlessly with GitHub Copilot
@@ -20,106 +27,108 @@ A Model Context Protocol (MCP) server for GitHub Copilot that provides comprehen
 
 ```
 /
-├── mcp_server.py              # Main MCP server with all job search tools
-├── job_searcher.py            # The Muse API + realistic job generation
-├── demo.py                    # Simple system demonstration
+├── mcp_server.py              # Main MCP server with all tools
+├── job_searcher.py            # Job search APIs and generation
+├── job_saver.py               # JSON format job saving utility
+├── pdf_parser.py              # PDF text extraction and analysis
+├── keyword_generator.py       # AI-powered keyword generation
+├── demo.py                    # Job search system demonstration
+├── keyword_demo.py            # Keyword tools demonstration  
+├── gemini_pdf_demo.py         # PDF + AI analysis demo
+├── keyword_tools_guide.md     # Comprehensive usage guide
 ├── requirements.txt           # Python dependencies
-└── job_search_results/        # Saved search results
-```
-
-# Job Search MCP Server
-
-A Model Context Protocol (MCP) server for GitHub Copilot that provides comprehensive job search functionality.
-
-## 🚀 Features
-
-- **Multi-Platform Job Search**: LinkedIn simulation + The Muse API + intelligent fallbacks
-- **GitHub Copilot Ready**: MCP compatible with structured JSON responses
-- **Real Job Data**: Live data from companies like Meta, Google, Amazon, Netflix
-- **Smart Fallbacks**: Market-accurate job generation when APIs are unavailable
-
-## 📁 Project Structure
-
-```
-/
-├── mcp_server.py              # Main MCP server with all job search tools
-├── job_searcher.py            # The Muse API + realistic job generation
-├── job_saver.py               # Utility for saving jobs in JSON format
-├── demo.py                    # System demonstration with JSON format
-├── requirements.txt           # Python dependencies
-└── job_search_results/        # Saved search results (JSON files)
+├── .env                       # Environment configuration
+└── job_search_results/        # Saved search results (JSON)
 ```
 
 ## 🛠 Quick Start
 
+### Installation
 ```bash
 # Install dependencies
 pip install -r requirements.txt
 
-# Test the system and see new JSON format
+# Set up environment variables (add your Gemini API key)
+# GEMINI_API_KEY=your_api_key_here
+```
+
+### Basic Usage
+```bash
+# Test job search system
 python demo.py
+
+# Test keyword generation tools
+python keyword_demo.py
+
+# Test PDF analysis with AI
+python gemini_pdf_demo.py
 
 # Start MCP server for GitHub Copilot
 python mcp_server.py
-
-# Test job saver utility
-python job_saver.py
 ```
 
-### Save Jobs to JSON Files
+## 🔧 Available MCP Tools
 
-```python
-from job_saver import save_jobs_to_json, validate_job_format
+### Job Search
+- **`search_linkedin_jobs`** - LinkedIn-style job simulation
+- **`search_muse_jobs`** - The Muse API + realistic fallbacks  
+- **`search_combined_jobs`** - Combined platform search
 
-# Search and save jobs
-result = search_combined_jobs("data scientist", "Texas", 30)
-jobs = json.loads(result)["jobs"]
+### PDF Processing
+- **`parse_pdf_document`** - Full PDF analysis with metadata
+- **`extract_pdf_text`** - Extract text only from PDFs
+- **`batch_parse_pdfs`** - Process multiple PDFs
+- **`extract_job_keywords_from_pdf`** - AI-powered PDF keyword extraction
 
-# Save with automatic filename
-file_path = save_jobs_to_json(
-    jobs, 
-    {"keywords": "data scientist", "location": "Texas", "limit": 30}
-)
+### AI Keyword Generation
+- **`generate_keywords_from_text`** - Extract keywords from text
+- **`generate_keywords_from_pdf`** - Extract keywords from PDFs
+- **`generate_job_match_keywords`** - Compare job vs resume
+- **`generate_industry_keywords`** - Industry-specific terms
+- **`optimize_keywords_for_ats`** - ATS optimization
 
-# Save with custom filename  
-file_path = save_jobs_to_json(
-    jobs, 
-    search_query,
-    "texas_data_science_jobs.json"
-)
+## 💡 Use Cases
 
-# Validate job format
-for job in jobs:
-    if validate_job_format(job):
-        print("✅ Valid format")
+### Job Search Optimization
+```bash
+# Find jobs and analyze them
+python -c "
+from keyword_generator import KeywordGenerator
+generator = KeywordGenerator()
+
+# Analyze job description
+job_keywords = generator.generate_keywords_from_text(job_description, 'job_description')
+
+# Compare with your resume
+match_analysis = generator.generate_job_match_keywords(job_description, resume_text)
+
+# Get ATS optimization tips
+ats_tips = generator.optimize_keywords_for_ats(resume_text, 'target_job_title')
+"
 ```
 
-## 🔧 Usage with GitHub Copilot
-
-### Available MCP Tools:
-1. **`search_linkedin_jobs`** - LinkedIn-style job simulation
-2. **`search_muse_jobs`** - The Muse API + realistic fallbacks  
-3. **`search_combined_jobs`** - Combined platform search
-
-### Example Usage:
+### Industry Research
+```bash
+# Research industry keywords
+python keyword_demo.py
 ```
-"Find data science jobs in Texas"
-→ Uses: search_combined_jobs("data scientist", "Texas", 30)
 
-"Show remote Python developer positions"
-→ Uses: search_muse_jobs("python developer", "Remote", 20)
+### PDF Document Analysis
+```bash
+# Analyze PDFs with AI
+python gemini_pdf_demo.py
 ```
 
 ## 📊 Job Data Format
 
-All jobs are saved in a standardized JSON format that matches your specification:
+All jobs are saved in a standardized JSON format:
 
 ```json
 {
   "search_metadata": {
-    "query": {"keywords": "data scientist", "location": "Texas", "limit": 30},
-    "total_results": 25,
-    "collected_at": "2025-11-08T17:36:35.678363",
+    "query": {"keywords": "data scientist", "location": "California", "limit": 30},
+    "total_results": 26,
+    "collected_at": "2025-11-08T17:46:27.760114",
     "source": "job_search_mcp_server"
   },
   "jobs": [
@@ -127,7 +136,7 @@ All jobs are saved in a standardized JSON format that matches your specification
       "company": "Meta",
       "position": "Senior Data Scientist",
       "apply_link": "https://linkedin.com/jobs/view/linkedin_1",
-      "location": "Texas",
+      "location": "California",
       "salary": "$120,000 - $180,000",
       "description": "We are seeking a talented Senior Data Scientist...",
       "requirements": "SQL, Python, Machine Learning, Statistics",
@@ -141,36 +150,60 @@ All jobs are saved in a standardized JSON format that matches your specification
       "visa_sponsorship": true,
       "source": "linkedin/linkedin_1",
       "collection_method": "mcp_linkedin_simulation",
-      "collected_at": "2025-11-08T17:36:35.678075",
-      "field": "AI/ML",
+      "collected_at": "2025-11-08T17:46:27.760075",
+      "field": "Data Science",
       "company_type": "big_tech"
     }
   ]
 }
 ```
 
-### Field Mapping:
-- **company**: Company name
-- **position**: Job title/position
-- **apply_link**: Direct application URL
-- **location**: Job location (city, state, or "Remote")
-- **salary**: Salary range or null
-- **description**: Job description summary
-- **requirements**: Required skills/qualifications
-- **benefits**: Employee benefits offered
-- **job_type**: "full_time", "part_time", "contract", etc.
-- **experience_level**: "entry_level", "mid_level", "senior_level"
-- **posted_date**: Date job was posted (YYYY-MM-DD)
-- **deadline**: Application deadline (or null)
-- **days_since_posted**: Days since job was posted
-- **remote_option**: "remote", "onsite", "hybrid"
-- **visa_sponsorship**: Boolean or null
-- **source**: Data source identifier
-- **collection_method**: How the data was collected
-- **collected_at**: ISO timestamp of data collection
-- **field**: Job category (AI/ML, Software Engineering, etc.)
-- **company_type**: "big_tech", "startup", "enterprise", etc.
+## 🤖 AI Keyword Analysis Format
+
+AI keyword extraction provides structured analysis:
+
+```json
+{
+  "technical_skills": ["Python", "AWS", "Docker"],
+  "soft_skills": ["Communication", "Leadership"],
+  "programming_languages": ["Python", "JavaScript"],
+  "tools_technologies": ["TensorFlow", "React"],
+  "job_titles": ["Data Scientist", "ML Engineer"],
+  "companies": ["Google", "Microsoft"],
+  "certifications": ["AWS Certified"],
+  "industries": ["Technology", "Finance"],
+  "document_summary": "Brief description of content",
+  "match_score": "75%",
+  "ats_score": "8/10",
+  "generated_at": "2025-11-08T20:00:00"
+}
+```
+
+## 🔑 Environment Setup
+
+Required environment variables in `.env`:
+
+```env
+# Google Gemini AI API Key
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# LinkedIn Credentials (optional for enhanced simulation)
+LINKEDIN_EMAIL=your_email@gmail.com
+LINKEDIN_PASSWORD=your_password
+```
+
+## 📚 Documentation
+
+- **Keyword Tools Guide**: `keyword_tools_guide.md` - Comprehensive usage documentation
+- **Demo Scripts**: Run any `*_demo.py` file for interactive examples
+- **API Reference**: Check `mcp_server.py` for all available tools
 
 ## ✅ Ready for Production
 
-The system is production-ready and GitHub Copilot compatible! 🚀
+This toolkit is production-ready and GitHub Copilot compatible! 🚀
+
+### Quick Test
+```bash
+# Test all functionality
+python demo.py && python keyword_demo.py && python gemini_pdf_demo.py
+```

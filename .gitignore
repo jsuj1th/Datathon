@@ -1,2 +1,34 @@
+# Environment files
 .env
+
+# Output directories
 job_search_results/*
+keyword_results/*
+parsed_pdfs/*
+ai_analysis_results/*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Temporary files
+*.tmp
+*_temp.py
+temp_*.py
+
+# Demo files (keep structure but ignore content)
+demo_pdfs/*.pdf
+demo_pdfs/*.txt
+
+# IDE files
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
