@@ -28,23 +28,26 @@ Multi-modal document analyzer that classifies documents into Public, Confidentia
 ## Quick Start
 
 ```bash
-# Install dependencies
+# 1. Install dependencies
 pip install -r requirements.txt
 
-# Set up API key
+# 2. Set up API key
 cp .env.example .env
 # Edit .env and add your OPENROUTER_API_KEY
 
-# Run Streamlit UI (recommended)
+# 3. Run the application
 streamlit run demo_ui.py
-
-# Or run Flask API
-python app.py
 ```
 
-Access:
-- **Streamlit UI**: http://localhost:8501
-- **Flask API**: http://localhost:5000
+**Access the UI at**: http://localhost:8501
+
+The Streamlit interface provides:
+- Document/image/video upload
+- Real-time classification
+- Evidence display with citations
+- Category breakdown visualization
+- Dual-LLM verification toggle
+- Metrics dashboard
 
 ## Supported File Types
 
@@ -168,26 +171,52 @@ Output Layer
 - **Throughput**: 6-8 docs/minute (single-LLM), 3-4 docs/minute (dual-LLM)
 - **Video Processing**: 2-5 minutes per video (depending on length)
 
-## API Endpoints
+## Using the System
 
-### Flask API
+### Streamlit UI (Main Interface)
+
+1. **Upload a document** - PDF, image, or video
+2. **Toggle dual-LLM** - Enable for higher accuracy (optional)
+3. **Click "Classify Document"**
+4. **View results**:
+   - Classification category
+   - Confidence score
+   - Category breakdown (% of each level)
+   - Citation-based evidence
+   - Safety validation
+
+### Programmatic Usage
+
+```python
+from preprocessor import DocumentPreprocessor
+from classifier import DocumentClassifier
+
+# Initialize
+preprocessor = DocumentPreprocessor()
+classifier = DocumentClassifier()
+
+# Classify a document
+filepath = "path/to/document.pdf"
+preprocess_result = preprocessor.check_file_validity(filepath)
+metadata = preprocess_result['metadata']
+content = preprocessor.extract_content_for_analysis(filepath, metadata)
+classification = classifier.classify_document(content, metadata)
+
+print(f"Category: {classification['category']}")
+print(f"Confidence: {classification['confidence']:.2%}")
+```
+
+### Advanced: Flask API (Optional)
+
+For system integrations, a Flask REST API is also available:
 
 ```bash
-# Classify document
-POST /api/classify
-Content-Type: multipart/form-data
-Body: file=@document.pdf
-
-# Batch processing
-POST /api/batch
-Body: {"files": ["file1.pdf", "file2.pdf"]}
-
-# Get batch status
-GET /api/batch/<job_id>/status
-
-# Get batch results
-GET /api/batch/<job_id>/results
+# Start Flask API
+python app.py
+# Access at http://localhost:5000
 ```
+
+See `app.py` for API endpoints.
 
 ## Configuration
 
