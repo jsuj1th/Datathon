@@ -1,7 +1,13 @@
+# ============================================================================
+# UNIFIED REQUIREMENTS FOR DATATHON PROJECT
+# All collectors, matchers, and utilities
+# ============================================================================
+
 # Core dependencies
 python-dotenv==1.0.0
 pydantic==2.10.4
 pydantic-settings==2.7.0
+pyyaml==6.0.1
 
 # Web scraping
 playwright==1.49.1
@@ -12,18 +18,47 @@ requests==2.32.3
 # Data processing
 pandas==2.2.3
 
-# MCP Client (for GitHub integration)
+# MCP Client (for GitHub integration & LinkedIn)
 mcp==1.3.0
+fastmcp>=0.1.0
+
+# LinkedIn API
+linkedin-api>=2.3.1
 
 # Async support
 asyncio==3.4.3
 aiohttp==3.11.11
 
+# Web server (for MCP servers)
+uvicorn>=0.24.0
+
 # Utilities
 python-dateutil==2.9.0
 
-# Apify (for reliable job scraping)
-apify-client==1.8.2
+# AI/ML (for job matching)
+# Uncomment if using Google Gemini or other AI APIs
+# google-generativeai>=0.3.0
 
-# Firecrawl (fastest MCP scraper, 7 sec avg, 83% accuracy)
+# Email support
+# Standard library smtplib is used, no additional packages needed
+
+# Apify (for reliable job scraping - optional)
+# Uncomment to enable Apify scraper
+# apify-client==1.8.2
+
+# Firecrawl (fastest MCP scraper, 7 sec avg, 83% accuracy - optional)
+# Uncomment to enable Firecrawl scraper
 firecrawl-py==4.6.0
+
+# ============================================================================
+# INSTALLATION NOTES:
+# 
+# For python3 (recommended):
+#   python3 -m pip install -r requirements.txt
+#
+# For Anaconda python:
+#   python -m pip install -r requirements.txt
+#
+# After installation, run playwright install for LinkedIn collector:
+#   playwright install chromium
+# ============================================================================

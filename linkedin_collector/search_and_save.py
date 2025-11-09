@@ -199,7 +199,7 @@ async def main():
     print("\n" + "=" * 70)
     print("🎉 ALL SEARCHES COMPLETE!")
     print("=" * 70)
-    print(f"📁 Files saved in: {Path(__file__).parent / 'job_search_results'}")
+    print(f"📁 Files saved in: {Path(__file__).parent.parent / 'data'}")
     print()
 
 

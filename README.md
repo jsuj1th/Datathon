@@ -4,42 +4,52 @@ An intelligent end-to-end job application pipeline that collects jobs from multi
 
 ## ✨ Features
 
-- **Multi-Source Job Collection**: Automatically collects jobs from LinkedIn and GitHub repositories
+- **Multi-Source Job Collection**: Automatically collects jobs from LinkedIn, GitHub, and web sources
 - **AI-Powered Matching**: Uses Google Gemini AI to match jobs with your resume
 - **Smart Ranking**: Ranks jobs by relevance with detailed match reasoning
 - **Automated Email Delivery**: Sends top 50 job matches via Gmail SMTP
-- **Complete Automation**: One command runs the entire pipeline
+- **Complete Automation**: Organized pipeline with centralized configuration
 
 ## 📁 Project Structure
 
 ```
-Project/
-├── linkedin_collector/          # LinkedIn job collection
-│   ├── linkedin_searcher.py     # LinkedIn job search
-│   ├── search_and_save.py       # Save LinkedIn jobs
-│   └── job_search_results/      # LinkedIn job data
+Datathon/
+├── .env                         # 🔑 Single environment file (API keys & credentials)
+├── config.yaml                  # ⚙️ Collection settings
+├── search_keywords.txt          # 🔍 Search terms for job collection
+├── requirements.txt             # 📦 Python dependencies
 │
-├── github_collector/            # GitHub job collection
-│   ├── github_discovery.py      # Discover job repos
-│   └── github_fetcher.py        # Fetch GitHub jobs
+├── collectors/                  # 📚 Job collection modules
+│   ├── github_discovery.py      # Discover GitHub job repos
+│   ├── github_fetcher.py        # Fetch jobs from GitHub
+│   ├── apify_scraper.py         # Apify web scraper
+│   └── firecrawl_scraper.py     # Firecrawl LLM scraper
 │
-├── data/                        # Additional job sources
-│   └── jobs_output.json         # Jobs from various sources
+├── github_collector/            # 🐙 GitHub job collection orchestrator
+│   ├── main.py                  # Main orchestrator for GitHub & web scraping
+│   └── README.md                # GitHub collector docs
 │
-├── matched_jobs/                # AI matching results
-│   └── top_50_matches.json      # Top 50 ranked jobs
+├── linkedin_collector/          # 💼 LinkedIn job collection
+│   ├── search_and_save.py       # LinkedIn job search & save
+│   ├── job_saver.py             # Job saving utility
+│   ├── mcp_server.py            # LinkedIn MCP server
+│   ├── job_keywords.txt         # LinkedIn search keywords
+│   └── README.md                # LinkedIn collector docs
 │
-├── models/                      # Data models
+├── data/                        # 💾 Unified data directory
+│   ├── jobs_output.json         # GitHub & web scraper jobs
+│   └── linkedin_*.json          # LinkedIn job files
+│
+├── models/                      # 📋 Data models
 │   └── job.py                   # Job data structure
 │
-├── collectors/                  # Legacy collectors
+├── matched_jobs/                # 🎯 AI matching results
+│   └── top_50_matches.json      # Top 50 ranked jobs
 │
-├── job_matcher.py              # AI job matching engine
-├── send_email_smtp.py          # Gmail email sender
-├── run_pipeline.py             # Main automation pipeline
-├── view_jobs.py                # View collected jobs
-├── main.py                     # Alternative job collector
-└── .env                        # Configuration (API keys)
+├── job_matcher.py              # 🤖 AI job matching engine
+├── send_email_smtp.py          # 📧 Gmail email sender
+├── run_pipeline.py             # 🚀 Main automation pipeline
+└── view_jobs.py                # 👀 View collected jobs
 ```
 
 ## 🚀 Quick Start
@@ -50,22 +60,30 @@ Project/
 # Install Python packages
 pip install -r requirements.txt
 
-# Install Playwright for web scraping (if needed)
+# Install Playwright for LinkedIn scraping (if needed)
 playwright install chromium
 ```
 
 ### 2. Configure Environment Variables
 
-Edit `.env` file with your credentials:
+Edit `.env` file in the root directory with your credentials:
 
 ```bash
 # Gemini API Key (REQUIRED for job matching)
 GEMINI_API_KEY=your_gemini_api_key_here
 
 # Gmail SMTP (REQUIRED for email sending)
-GMAIL_USER=your_email@gmail.com
-GMAIL_APP_PASSWORD=your_16_char_app_password
-RECIPIENT_EMAIL=recipient@gmail.com
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASSWORD=your_16_char_app_password
+
+# LinkedIn Credentials (for LinkedIn collector)
+LINKEDIN_EMAIL=your_linkedin_email
+LINKEDIN_PASSWORD=your_linkedin_password
+
+# Optional: For additional sources
+GITHUB_PERSONAL_ACCESS_TOKEN=your_github_token
+FIRECRAWL_API_KEY=your_firecrawl_key
+APIFY_API_TOKEN=your_apify_token
 ```
 
 #### Get Gmail App Password:
@@ -79,259 +97,158 @@ RECIPIENT_EMAIL=recipient@gmail.com
 2. Create API key
 3. Add to `.env` file
 
-### 3. Run the Complete Pipeline
+## 📊 End-to-End Flow
+
+### Complete Pipeline Flow:
+
+```
+1. JOB COLLECTION
+   ├── GitHub Collector (github_collector/main.py)
+   │   ├── Searches GitHub repos for job postings
+   │   ├── Web scraping (Firecrawl/Apify)
+   │   └── Saves to: data/jobs_output.json
+   │
+   └── LinkedIn Collector (linkedin_collector/search_and_save.py)
+       ├── Searches LinkedIn for jobs
+       └── Saves to: data/linkedin_*.json
+
+2. JOB MATCHING (job_matcher.py)
+   ├── Loads all jobs from data/ folder
+   ├── Uses Google Gemini AI for matching
+   ├── Ranks jobs by relevance
+   └── Saves to: matched_jobs/top_50_matches.json
+
+3. EMAIL DELIVERY (send_email_smtp.py)
+   └── Sends top 50 matches via Gmail SMTP
+```
+
+## 🎯 How to Run
+
+### Option 1: Run Complete Pipeline (Recommended)
 
 ```bash
+# From root directory
 python3 run_pipeline.py
 ```
 
 This will:
-1. ✅ Load jobs from LinkedIn and other sources (521 jobs)
+1. ✅ Load jobs from all sources in `data/` folder
 2. 🤖 Match jobs with your resume using AI
 3. 📊 Rank and select top 50 matches
 4. 📧 Send email with job details
 
-## 📋 Pipeline Components
+### Option 2: Run Individual Components
 
-### 1. Job Collection
+#### Collect GitHub & Web Jobs:
+```bash
+cd github_collector
+python3 main.py
+```
+Output: `../data/jobs_output.json`
 
-**LinkedIn Collector** (`linkedin_collector/`)
-- Searches LinkedIn for relevant jobs
-- Saves to `linkedin_collector/job_search_results/`
-
+#### Collect LinkedIn Jobs:
 ```bash
 cd linkedin_collector
 python3 search_and_save.py
 ```
+Output: `../data/linkedin_*.json`
 
-**GitHub Collector** (`github_collector/`)
-- Discovers job repositories on GitHub
-- Fetches jobs from markdown tables
-
-```bash
-cd github_collector
-python3 github_discovery.py
-```
-
-**Other Sources** (`data/`)
-- Jobs from additional sources stored in `data/jobs_output.json`
-
-### 2. AI Job Matching
-
-**Job Matcher** (`job_matcher.py`)
-- Loads jobs from all sources
-- Extracts resume from PDF
-- Uses Gemini AI to:
-  - Calculate match scores (0-100)
-  - Provide match reasoning
-  - Rank jobs by relevance
-
+#### Match Jobs with Resume:
 ```bash
 python3 job_matcher.py
 ```
-
+Input: All JSON files in `data/`
 Output: `matched_jobs/top_50_matches.json`
 
-### 3. Email Delivery
-
-**SMTP Email Sender** (`send_email_smtp.py`)
-- Sends top matches via Gmail
-- Formats jobs in readable email
-- Includes apply links and match scores
-
+#### Send Email:
 ```bash
 python3 send_email_smtp.py
 ```
+Input: `matched_jobs/top_50_matches.json`
 
-## 🔧 Individual Component Usage
+## 📝 Configuration Files
 
-### View Collected Jobs
+### `.env` (Root Directory)
+Single source of truth for all API keys and credentials. Used by all collectors.
 
-```bash
-python3 view_jobs.py
+### `config.yaml` (Root Directory)
+Job collection settings:
+- GitHub search keywords
+- Web scraping targets
+- Collection limits
+- Output format settings
+
+### `search_keywords.txt` (Root Directory)
+Search terms for GitHub & web scraping job collection.
+
+### `linkedin_collector/job_keywords.txt`
+Search terms for LinkedIn job collection in format:
+```
+keyword | location | limit
+machine learning engineer | Remote | 30
+data scientist | San Francisco | 25
 ```
 
-Shows statistics:
-- Total jobs collected
-- Jobs by source
-- Sample job listings
+## 📂 Data Organization
 
-### Run Job Matcher Only
+All job data is centralized in the `data/` folder:
+- `jobs_output.json` - GitHub and web scraper jobs
+- `linkedin_*.json` - LinkedIn job files (multiple files possible)
 
-```bash
-python3 job_matcher.py
+This centralized approach makes it easy to:
+- Process all jobs together
+- Deduplicate across sources
+- Archive or version control job data
+
+## 🔧 Customization
+
+### Add More Job Sources
+
+Edit `config.yaml` to add new web scraping targets:
+```yaml
+web_scraping:
+  sites:
+    - name: "YourJobBoard"
+      url: "https://yourjobboard.com/jobs"
+      enabled: true
 ```
 
-Outputs:
-- Console: Match scores and reasoning
-- File: `matched_jobs/top_50_matches.json`
+### Modify Search Keywords
 
-### Test Email Sending
-
-```bash
-python3 send_email_smtp.py
+Edit `search_keywords.txt` for GitHub/web scraping:
+```
+machine learning new grad
+AI engineer 2026
+data scientist entry level
 ```
 
-Requires:
-- `matched_jobs/top_50_matches.json` to exist
-- Gmail credentials in `.env`
-
-## 📊 Output Format
-
-### Matched Jobs (`matched_jobs/top_50_matches.json`)
-
-```json
-{
-  "matched_jobs": [
-    {
-      "company": "Google",
-      "position": "Machine Learning Engineer",
-      "location": "Mountain View, CA",
-      "match_score": 95,
-      "match_reason": "Strong alignment with your ML background...",
-      "apply_link": "https://...",
-      "source": "LinkedIn"
-    }
-  ],
-  "total_matched": 50,
-  "resume_summary": "...",
-  "matched_at": "2025-11-09T10:30:00"
-}
+Edit `linkedin_collector/job_keywords.txt` for LinkedIn:
+```
+machine learning | Remote | 30
+AI engineer | San Francisco | 25
 ```
 
-### Email Format
+## 🐛 Troubleshooting
 
-```
-🎯 Top Job Matches Based on Your Resume
-======================================================================
+### Jobs not collecting?
+- Check `.env` file has correct API keys
+- Verify `config.yaml` settings
+- Check network connectivity
 
-1. Machine Learning Engineer
-   Company: Google
-   Location: Mountain View, CA
-   Match Score: 95/100
-   Why: Strong alignment with your ML background and experience...
-   Apply: https://...
+### LinkedIn not working?
+- Ensure LinkedIn credentials in `.env`
+- Run `playwright install chromium`
+- Check LinkedIn hasn't blocked your account
 
-[... 49 more jobs ...]
-```
-
-## 🔑 Configuration
-
-### Resume Location
-
-Update in `job_matcher.py` (line 135):
-```python
-resume_file = str(project_dir / "YourResume.pdf")
-```
-
-### Job Sources
-
-Add/modify sources in collectors:
-- LinkedIn: `linkedin_collector/linkedin_searcher.py`
-- GitHub: `github_collector/github_discovery.py`
-- Other: Add JSON files to `data/`
-
-### Email Settings
-
-Configure in `.env`:
-```bash
-GMAIL_USER=sender@gmail.com
-RECIPIENT_EMAIL=receiver@gmail.com
-```
-
-### AI Model
-
-Change model in `job_matcher.py` (line 35):
-```python
-self.model = genai.GenerativeModel("gemini-2.0-flash-exp")
-```
-
-## 🛠️ Troubleshooting
-
-### "No matched jobs found"
-- Check if `matched_jobs/top_50_matches.json` exists
-- Run `python3 job_matcher.py` first
-
-### Email not sending
-- Verify Gmail App Password is correct (16 chars, no spaces)
-- Check 2-Factor Authentication is enabled
-- Check spam folder for received emails
-
-### "GEMINI_API_KEY not found"
-- Add your Gemini API key to `.env` file
-- Get key at: https://aistudio.google.com/app/apikey
-
-### Job collection fails
-- Check internet connection
-- Verify API tokens in `.env`
-- Check rate limits for LinkedIn/GitHub
-
-## 📈 Pipeline Flow
-
-```
-┌─────────────────────────────────────────────────┐
-│  1. JOB COLLECTION                              │
-│  ─────────────────                              │
-│  • LinkedIn Collector → job_search_results/     │
-│  • GitHub Collector   → data/jobs_output.json   │
-│  • Other Sources      → data/                   │
-└─────────────────────────────────────────────────┘
-                       ↓
-┌─────────────────────────────────────────────────┐
-│  2. AI JOB MATCHING (job_matcher.py)            │
-│  ────────────────────────────────                │
-│  • Load 521 jobs from all sources               │
-│  • Extract resume from PDF                      │
-│  • Gemini AI analyzes each job                  │
-│  • Calculate match scores (0-100)               │
-│  • Generate match reasoning                     │
-│  • Rank and select top 50                       │
-└─────────────────────────────────────────────────┘
-                       ↓
-┌─────────────────────────────────────────────────┐
-│  3. EMAIL DELIVERY (send_email_smtp.py)         │
-│  ───────────────────────────────────             │
-│  • Load top 50 matches                          │
-│  • Format email with job details                │
-│  • Send via Gmail SMTP                          │
-│  • ✅ Check your inbox!                         │
-└─────────────────────────────────────────────────┘
-```
-
-## 🎓 Educational Purpose
-
-This project is part of **CSCE 689: Programming LLMs** course, demonstrating:
-- LLM integration (Google Gemini)
-- Web scraping and data collection
-- Automated workflows
-- Email automation
-- Real-world AI applications
-
-## 📝 Files Overview
-
-| File | Purpose | When to Use |
-|------|---------|-------------|
-| `run_pipeline.py` | Complete automation | Run entire pipeline |
-| `job_matcher.py` | AI matching engine | Match jobs with resume |
-| `send_email_smtp.py` | Email sender | Send matched jobs |
-| `view_jobs.py` | View collected jobs | Check collected data |
-| `main.py` | Alternative collector | Collect from web sources |
-
-## 🚦 Status
-
-✅ **Job Collection**: Working (521 jobs collected)
-✅ **AI Matching**: Working (Gemini 2.0 Flash)
-✅ **Email Sending**: Working (Gmail SMTP)
-✅ **Full Pipeline**: Ready to use
-
-## 🤝 Contributing
-
-Feel free to:
-- Add new job sources
-- Improve AI matching prompts
-- Enhance email formatting
-- Add new features
+### Email not sending?
+- Verify Gmail app password (not regular password)
+- Check recipient email in `.env`
+- Ensure 2FA is enabled on Gmail account
 
 ## 📄 License
 
-Educational project for CSCE 689: Programming LLMs
+This project is for educational and personal use.
+
+## 🤝 Contributing
+
+Feel free to submit issues or pull requests to improve the pipeline!

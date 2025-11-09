@@ -5,10 +5,16 @@ Orchestrates GitHub discovery, fetching, and web scraping
 
 import asyncio
 import os
+import sys
 import yaml
 from typing import List
 from datetime import datetime
+from pathlib import Path
 from dotenv import load_dotenv
+
+# Add parent directory to path for imports
+parent_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(parent_dir))
 
 from collectors.github_discovery import GitHubRepoDiscovery
 from collectors.github_fetcher import GitHubJobFetcher
@@ -36,13 +42,18 @@ class JobDataCollector:
     Main orchestrator for collecting job postings from all sources
     """
 
-    def __init__(self, config_path: str = "config.yaml"):
+    def __init__(self, config_path: str = None):
+        # Default to parent directory's config.yaml
+        if config_path is None:
+            config_path = Path(__file__).parent.parent / "config.yaml"
+        
         # Load configuration
         with open(config_path, 'r') as f:
             self.config = yaml.safe_load(f)
 
-        # Load environment variables
-        load_dotenv()
+        # Load environment variables from parent directory
+        env_path = Path(__file__).parent.parent / ".env"
+        load_dotenv(env_path)
         self.github_token = os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")
 
         # Initialize collectors
@@ -135,8 +146,9 @@ class JobDataCollector:
         if self.firecrawl_enabled:
             print("  🔥 Using Firecrawl (LLM-powered extraction)")
             try:
-                # Load search keywords from file
-                search_keywords = load_search_keywords("search_keywords.txt")
+                # Load search keywords from parent directory
+                search_keywords_path = Path(__file__).parent.parent / "search_keywords.txt"
+                search_keywords = load_search_keywords(str(search_keywords_path))
 
                 firecrawl_jobs = self.firecrawl_scraper.scrape_all(
                     search_queries=search_keywords,
@@ -211,22 +223,25 @@ class JobDataCollector:
         print("=" * 70)
 
         if output_path is None:
-            output_path = self.config['output']['file_path']
+            # Default to parent directory's data folder
+            output_path = Path(__file__).parent.parent / self.config['output']['file_path']
+        
+        output_path = Path(output_path)
 
         # Create output directory if it doesn't exist
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Create job collection
         collection = JobCollection.from_job_list(jobs)
 
         # Save to file
         collection.to_json_file(
-            filepath=output_path,
+            filepath=str(output_path),
             pretty=self.config['output']['pretty_print']
         )
 
         print(f"  ✅ Saved {len(jobs)} jobs to {output_path}")
-        print(f"  📁 File size: {os.path.getsize(output_path) / 1024:.2f} KB")
+        print(f"  📁 File size: {output_path.stat().st_size / 1024:.2f} KB")
 
         # Print summary statistics
         self._print_summary(collection)
@@ -318,7 +333,7 @@ class JobDataCollector:
 
 async def main():
     """Main entry point"""
-    collector = JobDataCollector(config_path="config.yaml")
+    collector = JobDataCollector()
     await collector.run()
 
 

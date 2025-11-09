@@ -22,8 +22,8 @@ def save_jobs_to_json(jobs: List[Dict[str, Any]], search_query: Dict[str, Any], 
     Returns:
         Path to the saved file
     """
-    # Create results directory if it doesn't exist
-    results_dir = Path(__file__).parent / "job_search_results"
+    # Create results directory in main data folder
+    results_dir = Path(__file__).parent.parent / "data"
     results_dir.mkdir(exist_ok=True)
     
     # Generate filename if not provided
@@ -32,7 +32,10 @@ def save_jobs_to_json(jobs: List[Dict[str, Any]], search_query: Dict[str, Any], 
         keywords_clean = search_query.get("keywords", "jobs").replace(" ", "_").lower()
         location_clean = search_query.get("location", "").replace(" ", "_").lower()
         location_part = f"_{location_clean}" if location_clean else ""
-        filename = f"{keywords_clean}{location_part}_{timestamp}.json"
+        filename = f"linkedin_{keywords_clean}{location_part}_{timestamp}.json"
+    elif not filename.startswith("linkedin_"):
+        # Add linkedin prefix if not present
+        filename = f"linkedin_{filename}"
     
     # Ensure .json extension
     if not filename.endswith('.json'):
@@ -69,8 +72,8 @@ def load_jobs_from_json(filename: str) -> Dict[str, Any]:
     """
     file_path = Path(filename)
     if not file_path.exists():
-        # Try in results directory
-        results_dir = Path(__file__).parent / "job_search_results"
+        # Try in main data directory
+        results_dir = Path(__file__).parent.parent / "data"
         file_path = results_dir / filename
     
     if not file_path.exists():
