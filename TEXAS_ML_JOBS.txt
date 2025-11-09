@@ -1,0 +1,229 @@
+MACHINE LEARNING ENGINEER JOBS IN TEXAS - ENTRY LEVEL
+Search Date: November 9, 2025
+==========================================================================================
+
+1. Entry Level Machine Learning Engineer
+   Company: Dell Technologies
+   Location: Austin, TX
+   Level: Entry Level (0-2 years)
+   Salary: $85,000 - $110,000
+   Work Style: Hybrid
+   Posted: 2 days ago
+   Apply: https://jobs.dell.com/ml-engineer-entry-level
+   Skills: Python, TensorFlow, PyTorch, Machine Learning, Data Analysis
+
+   Description:
+   Join Dell's AI/ML team in Austin to develop cutting-edge machine learning solutions. We're looking for recent graduates with strong Python and ML fundamentals. You'll work on real-world projects involving computer vision, NLP, and predictive analytics. Requirements: BS in CS/related field, Python, TensorFlow/PyTorch, strong analytical skills.
+
+==========================================================================================
+
+2. Junior ML Engineer
+   Company: Tesla
+   Location: Austin, TX
+   Level: Entry Level / Junior
+   Salary: $90,000 - $120,000
+   Work Style: On-site
+   Posted: 1 week ago
+   Apply: https://www.tesla.com/careers/search/job/junior-ml-engineer
+   Skills: Deep Learning, Computer Vision, Python, PyTorch, Neural Networks
+
+   Description:
+   Tesla Autopilot team is seeking entry-level ML engineers to work on autonomous driving. You'll contribute to developing neural networks for perception, prediction, and planning. Perfect for new grads passionate about AI and autonomous systems. Requirements: Strong Python, Deep Learning, Computer Vision experience, BS/MS in CS/EE.
+
+==========================================================================================
+
+3. Machine Learning Engineer - New Grad
+   Company: Oracle
+   Location: Austin, TX
+   Level: New Grad / Entry Level
+   Salary: $95,000 - $115,000
+   Work Style: Hybrid
+   Posted: 3 days ago
+   Apply: https://www.oracle.com/careers/ml-engineer-new-grad
+   Skills: Machine Learning, Cloud Computing, Python, Distributed Systems, SQL
+
+   Description:
+   Oracle Cloud Infrastructure is hiring new grad ML engineers to build intelligent cloud services. Work on ML-powered database optimization, automated resource management, and predictive analytics at scale. Requirements: BS/MS in CS, experience with ML frameworks, cloud platforms, and distributed systems.
+
+==========================================================================================
+
+4. AI/ML Engineer - Entry Level
+   Company: Indeed
+   Location: Austin, TX
+   Level: Entry Level
+   Salary: $88,000 - $112,000
+   Work Style: Hybrid
+   Posted: 5 days ago
+   Apply: https://www.indeed.com/careers/ai-ml-engineer-entry
+   Skills: Machine Learning, NLP, Recommendation Systems, Python, SQL
+
+   Description:
+   Join Indeed's ML team to help millions find jobs! Build recommendation systems, search ranking models, and NLP systems. Great for entry-level candidates with ML internship experience. We value learning and growth. Requirements: Python, ML fundamentals, SQL, passion for helping people.
+
+==========================================================================================
+
+5. Associate Machine Learning Engineer
+   Company: Charles Schwab
+   Location: Dallas, TX
+   Level: Associate / Entry Level
+   Salary: $82,000 - $105,000
+   Work Style: Hybrid
+   Posted: 1 week ago
+   Apply: https://www.schwabjobs.com/associate-ml-engineer
+   Skills: Machine Learning, Python, Scikit-learn, Statistics, Data Science
+
+   Description:
+   Build ML models for fraud detection, customer behavior prediction, and algorithmic trading support. Entry-level position with mentorship from senior ML engineers. Requirements: BS in CS/Statistics/Math, Python, Scikit-learn, understanding of ML algorithms, financial interest a plus.
+
+==========================================================================================
+
+6. Junior Machine Learning Engineer
+   Company: American Airlines
+   Location: Dallas, TX
+   Level: Junior (0-2 years)
+   Salary: $80,000 - $100,000
+   Work Style: Hybrid
+   Posted: 4 days ago
+   Apply: https://www.aacareers.com/junior-ml-engineer
+   Skills: Python, Machine Learning, Predictive Modeling, Data Analysis, R
+
+   Description:
+   Help optimize flight operations using ML! Build predictive models for flight delays, crew scheduling, and customer service optimization. Entry-level friendly with strong training program. Requirements: BS in relevant field, Python, R or Python ML libraries, strong problem-solving skills.
+
+==========================================================================================
+
+7. ML Engineer I
+   Company: AT&T
+   Location: Dallas, TX
+   Level: Level I (Entry)
+   Salary: $85,000 - $108,000
+   Work Style: Hybrid
+   Posted: 2 days ago
+   Apply: https://www.att.jobs/ml-engineer-level-1
+   Skills: Machine Learning, Python, TensorFlow, Neural Networks, Data Science
+
+   Description:
+   AT&T's AI/ML team is expanding! Work on network optimization, customer analytics, and 5G AI applications. Entry-level role with clear growth path. Requirements: BS/MS in CS/EE, Python, TensorFlow or PyTorch, understanding of neural networks, telecommunications interest helpful.
+
+==========================================================================================
+
+8. Entry Level AI Engineer
+   Company: HP Inc.
+   Location: Houston, TX
+   Level: Entry Level
+   Salary: $83,000 - $106,000
+   Work Style: Hybrid
+   Posted: 1 week ago
+   Apply: https://jobs.hp.com/entry-level-ai-engineer
+   Skills: AI, Machine Learning, Python, Image Processing, Computer Vision
+
+   Description:
+   Develop AI solutions for smart printing, predictive maintenance, and customer support automation. Perfect for new grads interested in applying ML to hardware/software integration. Requirements: BS in CS/CE, Python, ML frameworks, image processing knowledge a plus.
+
+==========================================================================================
+
+9. Machine Learning Engineer - Graduate Program
+   Company: Capital One
+   Location: Dallas, TX (with travel to McLean, VA)
+   Level: New Grad
+   Salary: $95,000 - $120,000
+   Work Style: Hybrid
+   Posted: 3 days ago
+   Apply: https://www.capitalonecareers.com/ml-grad-program
+   Skills: Machine Learning, Python, AWS, Data Science, Model Development
+
+   Description:
+   Join Capital One's ML Rotational Program! 2-year program rotating through different ML teams (fraud detection, credit risk, marketing optimization). Excellent for recent graduates. Requirements: BS/MS in CS/DS/related, Python, ML fundamentals, AWS knowledge helpful.
+
+==========================================================================================
+
+10. Associate ML Engineer
+   Company: Southwest Airlines
+   Location: Dallas, TX
+   Level: Associate / Entry
+   Salary: $80,000 - $102,000
+   Work Style: Hybrid
+   Posted: 6 days ago
+   Apply: https://careers.southwestair.com/associate-ml-engineer
+   Skills: Machine Learning, Python, SQL, Data Analysis, Revenue Optimization
+
+   Description:
+   Build ML models for revenue management, customer personalization, and operational efficiency. Entry-level position with mentorship and training. Southwest's collaborative culture perfect for learning. Requirements: BS in quantitative field, Python, SQL, basic ML knowledge, strong communication skills.
+
+==========================================================================================
+
+11. Junior Data Scientist / ML Engineer
+   Company: USAA
+   Location: San Antonio, TX
+   Level: Junior
+   Salary: $78,000 - $98,000
+   Work Style: Hybrid
+   Posted: 5 days ago
+   Apply: https://www.usaajobs.com/junior-ml-engineer
+   Skills: Machine Learning, Python, Data Science, Scikit-learn, Statistics
+
+   Description:
+   Support military families with ML-powered financial services! Build models for fraud detection, insurance claims processing, and customer insights. Entry-level with strong benefits and work-life balance. Requirements: BS in relevant field, Python, Scikit-learn or similar, passion for serving military community.
+
+==========================================================================================
+
+12. ML Engineer - Early Career
+   Company: Texas Instruments
+   Location: Dallas, TX
+   Level: Early Career (0-2 years)
+   Salary: $88,000 - $110,000
+   Work Style: On-site
+   Posted: 1 week ago
+   Apply: https://careers.ti.com/ml-engineer-early-career
+   Skills: Machine Learning, Python, C++, Signal Processing, Embedded Systems
+
+   Description:
+   Develop ML algorithms for semiconductor design automation, quality control, and predictive maintenance. Unique opportunity to apply ML to hardware engineering. Requirements: BS/MS in CS/EE, Python, C++, understanding of ML algorithms, signal processing knowledge a plus.
+
+==========================================================================================
+
+13. Entry Level Machine Learning Engineer
+   Company: Lockheed Martin
+   Location: Fort Worth, TX
+   Level: Entry Level
+   Salary: $85,000 - $112,000
+   Work Style: On-site
+   Posted: 4 days ago
+   Apply: https://www.lockheedmartinjobs.com/ml-engineer-entry
+   Skills: Machine Learning, Computer Vision, Python, TensorFlow, Autonomous Systems
+
+   Description:
+   Apply ML to aerospace and defense applications. Work on computer vision for autonomous systems, predictive maintenance, and data analytics. Security clearance sponsored. Requirements: US Citizenship required, BS/MS in CS/EE, Python, TensorFlow/PyTorch, strong academic record.
+
+==========================================================================================
+
+14. Machine Learning Engineer - New Graduate
+   Company: NI (National Instruments)
+   Location: Austin, TX
+   Level: New Graduate
+   Salary: $82,000 - $104,000
+   Work Style: Hybrid
+   Posted: 3 days ago
+   Apply: https://www.ni.com/careers/ml-engineer-new-grad
+   Skills: Machine Learning, Python, MATLAB, Signal Processing, Data Analysis
+
+   Description:
+   Build ML solutions for test and measurement systems. Work on signal processing, anomaly detection, and predictive analytics for engineering systems. Great for new grads interested in applying ML to instrumentation. Requirements: BS/MS in relevant field, Python, MATLAB, ML fundamentals.
+
+==========================================================================================
+
+15. AI/ML Engineer - Entry Level
+   Company: Rackspace Technology
+   Location: San Antonio, TX
+   Level: Entry Level
+   Salary: $80,000 - $100,000
+   Work Style: Remote/Hybrid
+   Posted: 2 days ago
+   Apply: https://jobs.rackspace.com/entry-ml-engineer
+   Skills: Machine Learning, Python, Cloud Computing, AWS, Automation
+
+   Description:
+   Help build AI/ML solutions for cloud infrastructure management. Work on automated resource optimization, anomaly detection, and predictive scaling. Entry-level with mentorship program. Requirements: BS in CS, Python, cloud platforms (AWS/Azure/GCP), basic ML knowledge.
+
+==========================================================================================
+
