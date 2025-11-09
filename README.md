@@ -1,3 +1,5 @@
+📹 **Watch the Demo**: [https://youtu.be/9bDrL2iw4JU](https://youtu.be/9bDrL2iw4JU)
+
 # 🎯 Automated Job Matcher & Email System
 
 An intelligent end-to-end job application pipeline that collects jobs from multiple sources, matches them with your resume using AI, and emails the top matches.
