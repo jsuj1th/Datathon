@@ -1,0 +1,11 @@
+# Job Search Keywords
+# One keyword per line
+# Lines starting with # are ignored
+# Format: keyword | location | limit (optional, defaults to 30)
+
+# AI/ML Roles
+machine learning engineer | Remote | 30
+data scientist | San Francisco | 25
+AI researcher | New York | 20
+deep learning engineer | Remote | 25
+
